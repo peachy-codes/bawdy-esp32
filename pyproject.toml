@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ascii-udp-wled"
+version = "0.1.0"
+description = "Terminal-based WLED UDP controller with multi-channel addressing and ASCII visualizer"
+authors = [{ name = "WLED Terminal Dev" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=13.0.0",
+    "prompt_toolkit>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+wled-app = "wled_app.ui.cli:main"
+ascii-wled = "wled_app.ui.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

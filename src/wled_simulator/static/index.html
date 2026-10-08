@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WLED Digital Twin Studio</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/viewport.css">
+</head>
+<body>
+
+  <!-- Responsive Studio Hero Bar -->
+  <header>
+    <!-- Left Section: Controller Badge & Channel Meta -->
+    <div class="header-left">
+      <div class="controller-badge">
+        <div id="status-indicator" class="status-dot"></div>
+        <span id="device-name-display">Athom ESP32 Digital Twin</span>
+      </div>
+      <div id="channel-meta-display" class="device-meta">
+        DDP Port 4048 • 0 Channels • 0 LEDs
+      </div>
+    </div>
+
+    <!-- Center Section: Layout Preset Buttons -->
+    <div class="header-center">
+      <div class="btn-group">
+        <button id="btn-preset-garage" class="tool-btn active" title="Snap to Architectural Garage Door Frame (Left, Top, Right)">
+          <span class="tool-btn-icon">🏛️</span> Garage Arch
+        </button>
+        <button id="btn-preset-stacked" class="tool-btn" title="Arrange in Parallel Horizontal Rows">
+          <span class="tool-btn-icon">☰</span> Stacked Rows
+        </button>
+        <button id="btn-view-fit" class="tool-btn" title="Center & Fit Strips to Screen (Shortcut: F)">
+          <span class="tool-btn-icon">⛶</span> Fit View
+        </button>
+        <button id="btn-view-reset" class="tool-btn" title="Reset View Coordinates">
+          <span class="tool-btn-icon">↺</span> Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Section: Live Telemetry Bar -->
+    <div class="header-right">
+      <div class="telemetry-item">
+        <span class="telemetry-label">FPS:</span>
+        <span id="hud-fps" class="telemetry-value">0.0</span>
+      </div>
+      <div class="telemetry-item">
+        <span class="telemetry-label">PPS:</span>
+        <span id="hud-pps" class="telemetry-value">0</span>
+      </div>
+      <div class="telemetry-item">
+        <span class="telemetry-label">Data:</span>
+        <span id="hud-kbps" class="telemetry-value">0.0 KB/s</span>
+      </div>
+      <div class="telemetry-item">
+        <span class="telemetry-label">Jitter:</span>
+        <span id="hud-jitter" class="telemetry-value">0 µs</span>
+      </div>
+      <div id="hud-integrity-badge" class="integrity-tag tag-healthy">
+        ● Healthy
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Studio Viewport -->
+  <main id="viewport-container">
+    <canvas id="studio-canvas"></canvas>
+
+    <!-- Floating Toggle for Inspector -->
+    <button id="toggle-inspector-btn" style="display: none;">
+      ⚙ Channels
+    </button>
+
+    <!-- Inspector Panel -->
+    <aside id="inspector-panel">
+      <div class="inspector-header">
+        <span>Fixture Inspector</span>
+        <button id="inspector-close-btn" class="inspector-close-btn" title="Close Panel">✕</button>
+      </div>
+      <div class="inspector-body">
+        <div style="font-size: 11px; color: var(--text-muted);">
+          Click to select a strip. Drag to move. Press <b>R</b> to rotate, <b>F</b> to flip.
+        </div>
+        <div id="channel-list-container" class="channel-list">
+          <!-- Dynamically populated -->
+        </div>
+        <div id="selected-controls" style="display: none;">
+          <div style="font-size: 11px; font-weight: 600; color: var(--text-sec); margin-top: 4px;">
+            Actions for <span id="sel-ch-label" style="color:var(--accent);">CH1</span>:
+          </div>
+          <div class="channel-tools">
+            <button id="btn-sel-rotate" class="control-btn" title="Rotate selected channel 90°">
+              ↻ Rotate 90°
+            </button>
+            <button id="btn-sel-flip" class="control-btn" title="Invert LED sequence direction">
+              ⇄ Flip Direction
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Bottom Status Bar -->
+    <footer id="footer-bar">
+      <span>Drag fixtures to position • Scroll wheel to zoom • Middle-click or drag background to pan</span>
+    </footer>
+  </main>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

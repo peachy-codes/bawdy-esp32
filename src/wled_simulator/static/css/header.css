@@ -1,0 +1,191 @@
+/* Responsive Studio Hero Bar & Navigation */
+header {
+  min-height: 48px;
+  height: auto;
+  background: var(--bg-ui);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  gap: 10px 16px;
+  z-index: 50;
+  box-sizing: border-box;
+}
+
+/* Left Section: Controller Badge & Channel Meta */
+.header-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+.controller-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-dot.active {
+  background: var(--status-green);
+  box-shadow: 0 0 10px var(--status-green);
+}
+
+.device-meta {
+  font-size: 11px;
+  color: var(--text-sec);
+  font-family: var(--font-mono);
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Center Section: Layout Presets */
+.header-center {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.tool-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-sec);
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tool-btn:hover {
+  color: var(--text-pri);
+  background: var(--bg-panel-hover);
+}
+
+.tool-btn.active {
+  color: #fff;
+  background: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.tool-btn-icon {
+  font-size: 13px;
+}
+
+/* Right Section: Telemetry HUD */
+.header-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-family: var(--font-mono);
+}
+
+.telemetry-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.telemetry-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.telemetry-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-pri);
+}
+
+.integrity-tag {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.tag-healthy { background: rgba(16, 185, 129, 0.15); color: var(--status-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+.tag-gap { background: rgba(245, 158, 11, 0.15); color: var(--status-yellow); border: 1px solid rgba(245, 158, 11, 0.3); }
+.tag-torn { background: rgba(239, 68, 68, 0.15); color: var(--status-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+/* Responsive Multi-Layer Breakpoints */
+@media (max-width: 1100px) {
+  header {
+    padding: 10px 16px;
+  }
+  .header-left {
+    order: 1;
+  }
+  .header-right {
+    order: 2;
+  }
+  .header-center {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 4px;
+    border-top: 1px solid rgba(35, 51, 72, 0.5);
+  }
+}
+
+@media (max-width: 700px) {
+  header {
+    gap: 8px 12px;
+  }
+  .header-left {
+    width: 100%;
+  }
+  .header-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .header-center {
+    width: 100%;
+  }
+}

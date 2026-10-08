@@ -1,0 +1,212 @@
+/* Viewport Stage & Canvas Workspace */
+#viewport-container {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+}
+
+#viewport-container.panning {
+  cursor: grabbing;
+}
+
+#studio-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Floating Inspector Panel */
+#inspector-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 260px;
+  max-height: calc(100% - 32px);
+  background: rgba(16, 23, 34, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  overflow: hidden;
+}
+
+#inspector-panel.collapsed {
+  transform: translateX(290px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inspector-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-sec);
+}
+
+.inspector-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.inspector-close-btn:hover {
+  color: var(--text-pri);
+  background: var(--bg-panel);
+}
+
+.inspector-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 12px;
+  overflow-y: auto;
+}
+
+.channel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.channel-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.channel-item:hover {
+  border-color: var(--text-muted);
+}
+
+.channel-item.selected {
+  border-color: var(--accent);
+  background: rgba(0, 180, 216, 0.1);
+}
+
+.channel-info-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.channel-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  background: #1e293b;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+.channel-label {
+  font-weight: 600;
+  color: var(--text-pri);
+}
+
+.channel-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.channel-tools {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.control-btn {
+  flex: 1;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  color: var(--text-sec);
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-ui);
+}
+
+.control-btn:hover {
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--bg-panel-hover);
+}
+
+/* Floating Inspector Trigger */
+#toggle-inspector-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  color: var(--text-sec);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+#toggle-inspector-btn:hover {
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Bottom Hint Bar */
+#footer-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(16, 23, 34, 0.85);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  z-index: 30;
+}
