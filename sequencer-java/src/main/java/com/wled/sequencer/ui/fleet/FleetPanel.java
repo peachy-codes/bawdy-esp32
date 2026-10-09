@@ -488,14 +488,29 @@ public class FleetPanel extends JPanel {
         }
     }
 
+    public void updateUniverseAndPatch(SpatialUniverseModel newUniverse, PatchTableModel newPatch) {
+        if (newPatch != null) {
+            this.nodes.clear();
+            this.nodes.addAll(newPatch.generateControllerNodes());
+            this.nodeTableModel.fireTableDataChanged();
+            this.segmentTableModel.setSegments(newPatch.getSegments());
+            updateSummaryText();
+        }
+    }
+
     private static class PatchSegmentTableModel extends AbstractTableModel {
         private final String[] COLUMNS = {
                 "Seg #", "Fixture ID", "Controller Node", "CH", "Pixel Start", "Count", "Color Order", "Reversed", "Protocol"
         };
-        private final List<PatchSegmentModel> segments;
+        private List<PatchSegmentModel> segments;
 
         PatchSegmentTableModel(List<PatchSegmentModel> segments) {
-            this.segments = segments;
+            this.segments = segments != null ? segments : new ArrayList<>();
+        }
+
+        public void setSegments(List<PatchSegmentModel> segments) {
+            this.segments = segments != null ? segments : new ArrayList<>();
+            fireTableDataChanged();
         }
 
         @Override

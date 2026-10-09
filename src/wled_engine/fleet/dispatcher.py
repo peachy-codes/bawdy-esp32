@@ -133,7 +133,6 @@ class MultiNodeDispatcher:
             if led_count == 0:
                 continue
 
-            frame = FrameBuffer.from_rgb_bytes(bytes(all_bytes))
             emitter = self._emitters.get(node.protocol)
             if not emitter:
                 emitter = get_emitter(node.protocol)
@@ -141,9 +140,10 @@ class MultiNodeDispatcher:
 
             # If broadcast sync is active, disable push flag so packets buffer in board RAM
             push_flag = not sync if isinstance(emitter, DdpEmitter) else True
-            if isinstance(emitter, DdpEmitter):
-                packets = emitter.encode_frame(frame, push=push_flag)
+            if hasattr(emitter, "encode_raw_bytes"):
+                packets = emitter.encode_raw_bytes(all_bytes, push=push_flag)
             else:
+                frame = FrameBuffer.from_rgb_bytes(bytes(all_bytes))
                 packets = emitter.encode_frame(frame)
 
             try:
@@ -167,6 +167,15 @@ class MultiNodeDispatcher:
                 pass
 
         return total_bytes
+
+    def emit_broadcast_sync(self) -> int:
+        """Emit an explicit broadcast frame sync packet (0x41) to latch all controllers simultaneously."""
+        sync_packet = DdpEmitter.encode_sync_packet(seq=self._frame_seq)
+        self._frame_seq = (self._frame_seq % 15) + 1
+        try:
+            return self._sender.send_packet(self.broadcast_ip, self.sync_port, sync_packet)
+        except Exception:
+            return 0
 
     def get_telemetry(self) -> dict[str, dict[str, Any]]:
         """Return real-time transmission statistics across all nodes."""

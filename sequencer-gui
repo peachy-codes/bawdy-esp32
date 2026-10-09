@@ -9,7 +9,7 @@ if [ ! -f "$JAR_FILE" ]; then
   "$ROOT_DIR/sequencer-java/build.sh"
 fi
 
-echo "🎛️ Launching WLED Sequence Editor [Java 17 Swing]..."
+echo "🎛️ Launching WLED Universe Manager [Java 17 Swing]..."
 exec java -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -jar "$JAR_FILE" \
   --sequences "$ROOT_DIR/sequences" \
   --universe "$ROOT_DIR/data/venue/universe.json" \

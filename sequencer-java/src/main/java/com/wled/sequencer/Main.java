@@ -23,7 +23,7 @@ public class Main {
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
         System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("apple.awt.application.name", "WLED Sequence Editor");
+        System.setProperty("apple.awt.application.name", "WLED Universe Manager");
     }
 
     public static void main(String[] args) {

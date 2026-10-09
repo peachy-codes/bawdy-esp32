@@ -37,17 +37,15 @@ class FrameClock:
         return dt
 
     def sleep_until_next_frame(self, loop_start_time: float) -> None:
-        """Sleep remaining time in frame budget to maintain exact target FPS."""
+        """Sleep remaining time in frame budget to maintain exact target FPS without OS drift."""
         now = time.perf_counter()
         compute_time = now - loop_start_time
         sleep_time = self.frame_interval - compute_time
 
-        if sleep_time > 0.002:
-            # Coarse sleep for the bulk of the duration
-            time.sleep(sleep_time - 0.001)
-            # Fine spin-wait for remaining microsecond precision
-            while time.perf_counter() - loop_start_time < self.frame_interval:
-                pass
-        elif sleep_time > 0:
-            while time.perf_counter() - loop_start_time < self.frame_interval:
-                pass
+        if sleep_time > 0.010:
+            # Coarse sleep with safe 8ms margin to prevent macOS/Linux timer quantum oversleep
+            time.sleep(sleep_time - 0.008)
+        
+        # Fine spin-wait for remaining microsecond precision
+        while time.perf_counter() - loop_start_time < self.frame_interval:
+            pass

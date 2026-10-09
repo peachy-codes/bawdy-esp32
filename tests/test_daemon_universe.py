@@ -69,6 +69,12 @@ class TestDaemonUniverse(unittest.TestCase):
         self.assertIn("wled_01", resp["nodes"])
         self.assertGreaterEqual(resp["nodes"]["wled_01"]["frames_sent"], 1)
 
+        # 10. POST /api/sync
+        code, resp = handle_rest_request(self.engine, "POST", "/api/sync")
+        self.assertEqual(code, 200)
+        self.assertEqual(resp["status"], "ok")
+        self.assertTrue(resp["sync_emitted"])
+
 
 if __name__ == "__main__":
     unittest.main()

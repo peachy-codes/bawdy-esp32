@@ -27,8 +27,8 @@ import java.util.List;
  */
 public class SpatialStageView extends JPanel {
     private final StageCanvasPanel canvasPanel;
-    private final SpatialUniverseModel universe;
-    private final PatchTableModel patchTable;
+    private SpatialUniverseModel universe;
+    private PatchTableModel patchTable;
 
     // Simulation selector promoted to field for programmatic synchronization
     private final JComboBox<String> cmbSimMode = new JComboBox<>(new String[]{
@@ -96,6 +96,18 @@ public class SpatialStageView extends JPanel {
 
     public StageCanvasPanel getCanvasPanel() {
         return canvasPanel;
+    }
+
+    public void setUniverse(SpatialUniverseModel universe) {
+        this.universe = universe;
+        this.canvasPanel.setUniverse(universe);
+        populateFixtureTree();
+    }
+
+    public void setPatchTable(PatchTableModel patchTable) {
+        this.patchTable = patchTable;
+        this.canvasPanel.setPatchTable(patchTable);
+        populateFixtureTree();
     }
 
     public void blackout() {

@@ -41,66 +41,49 @@ class DdpEmitter:
         self._sequence = (self._sequence % 15) + 1
         return seq
 
+    def encode_raw_bytes(
+        self,
+        raw_bytes: bytes | bytearray,
+        push: bool = True,
+    ) -> list[bytes]:
+        """Encode contiguous RGB bytes directly into DDP datagrams without object allocation."""
+        total_bytes = len(raw_bytes)
+        if total_bytes == 0:
+            return []
+
+        chunk_bytes = self.max_leds_per_packet * 3
+        packets: list[bytes] = []
+
+        for start_byte in range(0, total_bytes, chunk_bytes):
+            end_byte = min(start_byte + chunk_bytes, total_bytes)
+            payload = raw_bytes[start_byte:end_byte]
+            is_last_chunk = end_byte >= total_bytes
+            flags1 = 0x41 if (is_last_chunk and push) else 0x40
+            seq = self._next_sequence()
+
+            header = struct.pack(
+                ">BBBB I H",
+                flags1,
+                seq,
+                0x01,  # data_type = RGB
+                0x01,  # dest_id = default display
+                start_byte,
+                len(payload),
+            )
+            packets.append(header + payload)
+
+        return packets
+
     def encode_frame(
         self,
         frame: FrameBuffer,
         timeout_sec: int = 2,
         push: bool = True,
     ) -> list[bytes]:
-        """Encode frame into one or more DDP UDP packets.
-
-        Args:
-            frame: FrameBuffer to encode.
-            timeout_sec: Compatibility timeout parameter.
-            push: If True, sets PUSH bit on final chunk to latch frame immediately.
-                  If False, buffers in receiver memory waiting for a DDP Sync packet.
-        """
-        total_leds = len(frame)
-        if total_leds == 0:
+        """Encode frame into one or more DDP UDP packets."""
+        if len(frame) == 0:
             return []
-
-        raw_bytes = frame.to_rgb_bytes()
-        packets: list[bytes] = []
-
-        chunk_size_leds = self.max_leds_per_packet
-        total_chunks = (total_leds + chunk_size_leds - 1) // chunk_size_leds
-
-        for chunk_idx in range(total_chunks):
-            start_led = chunk_idx * chunk_size_leds
-            end_led = min(start_led + chunk_size_leds, total_leds)
-            chunk_led_count = end_led - start_led
-
-            start_byte = start_led * 3
-            end_byte = end_led * 3
-            payload = raw_bytes[start_byte:end_byte]
-
-            is_last_chunk = chunk_idx == total_chunks - 1
-            # 0x40 = DDP v1; 0x01 = PUSH flag
-            flags1 = 0x41 if (is_last_chunk and push) else 0x40
-            seq = self._next_sequence()
-            data_type = 0x01  # RGB
-            dest_id = 0x01  # Default display ID
-
-            # Pack 10-byte header:
-            # B: flags1 (1 byte)
-            # B: sequence (1 byte)
-            # B: data_type (1 byte)
-            # B: dest_id (1 byte)
-            # >I: offset in bytes (4 bytes big-endian)
-            # >H: length in bytes (2 bytes big-endian)
-            header = struct.pack(
-                ">BBBB I H",
-                flags1,
-                seq,
-                data_type,
-                dest_id,
-                start_byte,
-                len(payload),
-            )
-
-            packets.append(header + payload)
-
-        return packets
+        return self.encode_raw_bytes(frame.to_rgb_bytes(), push=push)
 
     @staticmethod
     def encode_sync_packet(seq: int = 1) -> bytes:

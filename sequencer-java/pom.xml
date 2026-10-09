@@ -8,8 +8,8 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>WLED Pattern Sequencer [Java Edition]</name>
-    <description>Desktop Pattern Sequencer Studio for WLED Lighting Engine</description>
+    <name>WLED Universe Manager [Java Edition]</name>
+    <description>Desktop Universe Manager &amp; Spatial Show Controller for WLED Lighting Engine</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

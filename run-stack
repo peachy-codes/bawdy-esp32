@@ -69,8 +69,8 @@ case "$MODE" in
     fi
     echo "   ✅ Lighting Engine REST Daemon active on http://127.0.0.1:8765"
 
-    # 3. Launch Java Sequencer GUI in foreground
-    echo "3. Launching WLED Sequence Editor [Java Desktop]..."
+    # 3. Launch Java Universe Manager GUI in foreground
+    echo "3. Launching WLED Universe Manager [Java Desktop]..."
     "$ROOT_DIR/sequencer-gui"
 
     ;;

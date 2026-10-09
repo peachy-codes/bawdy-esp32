@@ -94,17 +94,32 @@ class SpatialSampler:
                 buf.extend(b"\x00" * (needed_bytes - len(buf)))
 
             eff_scale = max(0.0, min(1.0, seg.brightness_scale * master_brightness))
+            order = seg.color_order
 
-            for i, col in enumerate(slice_colors):
-                dest_offset = (seg.port_offset + i) * bpp
-                r = int(round(col.r * eff_scale))
-                g = int(round(col.g * eff_scale))
-                b = int(round(col.b * eff_scale))
-
-                permuted = permute_color(r, g, b, seg.color_order)
-                for bi, byte_val in enumerate(permuted):
-                    if dest_offset + bi < len(buf):
-                        buf[dest_offset + bi] = byte_val
+            if order == ColorOrder.GRB:
+                for i, col in enumerate(slice_colors):
+                    dest_offset = (seg.port_offset + i) * 3
+                    if dest_offset + 2 < len(buf):
+                        buf[dest_offset] = int(round(col.g * eff_scale))
+                        buf[dest_offset + 1] = int(round(col.r * eff_scale))
+                        buf[dest_offset + 2] = int(round(col.b * eff_scale))
+            elif order == ColorOrder.RGB:
+                for i, col in enumerate(slice_colors):
+                    dest_offset = (seg.port_offset + i) * 3
+                    if dest_offset + 2 < len(buf):
+                        buf[dest_offset] = int(round(col.r * eff_scale))
+                        buf[dest_offset + 1] = int(round(col.g * eff_scale))
+                        buf[dest_offset + 2] = int(round(col.b * eff_scale))
+            else:
+                for i, col in enumerate(slice_colors):
+                    dest_offset = (seg.port_offset + i) * bpp
+                    r = int(round(col.r * eff_scale))
+                    g = int(round(col.g * eff_scale))
+                    b = int(round(col.b * eff_scale))
+                    permuted = permute_color(r, g, b, order)
+                    for bi, byte_val in enumerate(permuted):
+                        if dest_offset + bi < len(buf):
+                            buf[dest_offset + bi] = byte_val
 
         return controller_buffers
 

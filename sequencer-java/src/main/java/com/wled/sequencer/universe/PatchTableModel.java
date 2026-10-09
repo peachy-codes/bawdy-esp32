@@ -96,6 +96,37 @@ public class PatchTableModel {
     }
 
     /**
+     * Validates the patch table for hardware port collisions and overlapping pixel ranges.
+     * @return List of error strings; empty if patch is 100% clean.
+     */
+    public List<String> validate() {
+        List<String> errors = new ArrayList<>();
+        Map<String, List<PatchSegmentModel>> portBuckets = new HashMap<>();
+
+        for (PatchSegmentModel s : segments) {
+            String key = s.getControllerId() + "#" + s.getChannelIndex();
+            portBuckets.computeIfAbsent(key, k -> new ArrayList<>()).add(s);
+        }
+
+        for (Map.Entry<String, List<PatchSegmentModel>> entry : portBuckets.entrySet()) {
+            List<PatchSegmentModel> segs = entry.getValue();
+            for (int i = 0; i < segs.size(); i++) {
+                for (int j = i + 1; j < segs.size(); j++) {
+                    PatchSegmentModel s1 = segs.get(i);
+                    PatchSegmentModel s2 = segs.get(j);
+                    int s1End = s1.getPortOffset() + s1.getPixelCount();
+                    int s2End = s2.getPortOffset() + s2.getPixelCount();
+                    if (Math.max(s1.getPortOffset(), s2.getPortOffset()) < Math.min(s1End, s2End)) {
+                        errors.add(String.format("Port Collision on Controller '%s' Channel %d: Fixture '%s' [%d..%d] overlaps with Fixture '%s' [%d..%d]",
+                                s1.getControllerId(), s1.getChannelIndex(), s1.getFixtureId(), s1.getPortOffset(), s1End, s2.getFixtureId(), s2.getPortOffset(), s2End));
+                    }
+                }
+            }
+        }
+        return errors;
+    }
+
+    /**
      * Synthesizes 20-node controller fleet metadata from the patch segments.
      */
     public List<ControllerNodeModel> generateControllerNodes() {

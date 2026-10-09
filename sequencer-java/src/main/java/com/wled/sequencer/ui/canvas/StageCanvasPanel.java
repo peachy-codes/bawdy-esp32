@@ -361,13 +361,29 @@ public class StageCanvasPanel extends JPanel {
 
     // --- Animation & Simulation Loop ---
 
+    // High-performance color & blackout state tracking
+    private boolean isBlackoutState = false;
+
+    private record PreparedCue(
+            SequenceStep step,
+            Color primaryColor,
+            double speed,
+            double brightness,
+            String pattern,
+            String group,
+            String blendMode
+    ) {}
+
+    // --- Animation & Simulation Loop ---
+
     private void setupAnimationTimer() {
         lastAnimTimestamp = System.nanoTime();
-        animationTimer = new javax.swing.Timer(16, e -> { // ~60 FPS
+        // 33ms interval (~30 FPS) aligns with hardware WLED refresh rate and eliminates EDT thread starvation
+        animationTimer = new javax.swing.Timer(33, e -> {
             long now = System.nanoTime();
             double dt = (now - lastAnimTimestamp) / 1_000_000_000.0;
             lastAnimTimestamp = now;
-            if (dt > 0.1) dt = 0.016;
+            if (dt > 0.1) dt = 0.033;
 
             simTimeSec += dt * simulationSpeed;
             updateSimulationColors();
@@ -384,35 +400,94 @@ public class StageCanvasPanel extends JPanel {
             t = player.getElapsedSec();
         }
 
+        // Fast path: In TIMELINE mode when stopped or idle, maintain blackout without loop overhead
+        if (simulationMode == SimulationMode.TIMELINE) {
+            boolean hasActiveCues = (player != null && player.isPlaying() && !player.getActiveCueIds().isEmpty());
+            if (!hasActiveCues) {
+                if (isBlackoutState) {
+                    return; // Already blacked out, skip 5,153-pixel evaluation completely
+                }
+                clearAllFixtureColors();
+                isBlackoutState = true;
+                return;
+            }
+        }
+        isBlackoutState = false;
+
+        // Pre-parse and prepare active cues ONCE per frame rather than for all 5,153 individual diodes
+        List<PreparedCue> preparedCues = Collections.emptyList();
+        if (simulationMode == SimulationMode.TIMELINE && player != null) {
+            List<SequenceStep> activeSteps = player.getActiveSteps();
+            if (!activeSteps.isEmpty()) {
+                preparedCues = new ArrayList<>(activeSteps.size());
+                for (SequenceStep step : activeSteps) {
+                    Color prim = parseHex(step.getPrimaryColor());
+                    double bright = step.getBrightness() * step.getTargetOpacity() * masterBrightness;
+                    String pat = step.getPatternId() != null ? step.getPatternId().toLowerCase() : "solid";
+                    preparedCues.add(new PreparedCue(
+                            step, prim, step.getSpeed(), bright, pat,
+                            step.getFixtureGroup(), step.getBlendMode()
+                    ));
+                }
+            }
+        }
+
         for (FixtureModel f : universe.getFixtures()) {
             List<Color> colors = fixtureColorCache.computeIfAbsent(f.getId(), k -> new ArrayList<>());
             int count = f.getPoints().size();
             while (colors.size() < count) colors.add(Color.BLACK);
 
+            // Filter cues relevant to this specific fixture group
+            List<PreparedCue> fixtureCues = null;
+            if (simulationMode == SimulationMode.TIMELINE) {
+                fixtureCues = new ArrayList<>();
+                for (PreparedCue pc : preparedCues) {
+                    if (matchesTargetGroup(f, pc.group)) {
+                        fixtureCues.add(pc);
+                    }
+                }
+                if (fixtureCues.isEmpty()) {
+                    // No cues target this fixture; immediately set to black
+                    for (int i = 0; i < count; i++) {
+                        colors.set(i, Color.BLACK);
+                    }
+                    continue;
+                }
+            }
+
             for (int i = 0; i < count; i++) {
                 Point3D p = f.getPoints().get(i);
-                Color c = evaluatePixelColor(f, i, p, t);
+                Color c = evaluatePixelColor(f, i, p, t, fixtureCues);
                 colors.set(i, c);
             }
         }
     }
 
-    private Color evaluatePixelColor(FixtureModel f, int pixelIndex, Point3D p, double timeVal) {
+    private void clearAllFixtureColors() {
+        if (universe == null) return;
+        for (FixtureModel f : universe.getFixtures()) {
+            List<Color> colors = fixtureColorCache.get(f.getId());
+            if (colors != null) {
+                for (int i = 0; i < colors.size(); i++) {
+                    colors.set(i, Color.BLACK);
+                }
+            }
+        }
+    }
+
+    private Color evaluatePixelColor(FixtureModel f, int pixelIndex, Point3D p, double timeVal, List<PreparedCue> fixtureCues) {
         if (simulationMode == SimulationMode.BLACKOUT) {
             return Color.BLACK;
         }
 
         if (simulationMode == SimulationMode.ANGLE_SWEEP) {
-            // 45 degree spatial travelling wave
             double coord = (p.getX() + p.getY()) * 0.25;
             float hue = (float) ((coord - timeVal * 0.4) % 1.0);
             if (hue < 0) hue += 1.0f;
-            Color hsb = Color.getHSBColor(hue, 0.9f, (float) masterBrightness);
-            return hsb;
+            return Color.getHSBColor(hue, 0.9f, (float) masterBrightness);
         }
 
         if (simulationMode == SimulationMode.RADIAL_PULSE) {
-            // Expanding concentric rings from DJ booth (0, 5.5)
             double dist = Math.sqrt(p.getX() * p.getX() + Math.pow(p.getY() - 5.5, 2));
             double wave = Math.sin(dist * 1.5 - timeVal * 5.0);
             wave = Math.max(0.0, wave);
@@ -429,7 +504,6 @@ public class StageCanvasPanel extends JPanel {
         }
 
         if (simulationMode == SimulationMode.LINEAR_GRADIENT) {
-            // Stage North (cyan) to FOH South (magenta)
             double normY = Math.max(0.0, Math.min(1.0, (p.getY() + 6.0) / 12.0));
             int r = (int) (( normY * 255 + (1 - normY) * 0 ) * masterBrightness);
             int g = (int) (( normY * 50 + (1 - normY) * 200 ) * masterBrightness);
@@ -437,20 +511,13 @@ public class StageCanvasPanel extends JPanel {
             return new Color(Math.min(255, r), Math.min(255, g), Math.min(255, b));
         }
 
-        // --- TIMELINE MODE: Evaluate active sequence cues ---
-        if (player != null) {
-            Set<String> activeIds = player.getActiveCueIds();
-            if (activeIds.isEmpty() || !player.isPlaying()) {
-                // All lights strictly off when stopped or idle
-                return Color.BLACK;
-            }
-
+        // --- TIMELINE MODE: Evaluate prepared active sequence cues ---
+        if (fixtureCues != null && !fixtureCues.isEmpty()) {
             Color accumulated = Color.BLACK;
-            for (SequenceStep step : player.getActiveSteps()) {
-                if (!matchesTarget(f, step)) continue;
-
-                Color cueCol = calculateCueColor(step, pixelIndex, f.getPoints().size(), p, timeVal);
-                accumulated = blendColors(accumulated, cueCol, step.getBlendMode());
+            int totalPixels = f.getPoints().size();
+            for (PreparedCue pc : fixtureCues) {
+                Color cueCol = calculatePreparedCueColor(pc, pixelIndex, totalPixels, p, timeVal);
+                accumulated = blendColors(accumulated, cueCol, pc.blendMode);
             }
             return accumulated;
         }
@@ -458,23 +525,19 @@ public class StageCanvasPanel extends JPanel {
         return Color.BLACK;
     }
 
-    private boolean matchesTarget(FixtureModel f, SequenceStep step) {
-        String grp = step.getFixtureGroup();
-        if (grp != null && !grp.isBlank() && !grp.equalsIgnoreCase("all")) {
-            if (!grp.equalsIgnoreCase(f.getGroup())) {
-                return false;
-            }
+    private boolean matchesTargetGroup(FixtureModel f, String grp) {
+        if (grp == null || grp.isBlank() || grp.equalsIgnoreCase("all")) {
+            return true;
         }
-        return true;
+        return grp.equalsIgnoreCase(f.getGroup());
     }
 
-    private Color calculateCueColor(SequenceStep step, int pixelIndex, int totalPixels, Point3D p, double timeVal) {
-        String pat = step.getPatternId() != null ? step.getPatternId().toLowerCase() : "solid";
-        double speed = step.getSpeed();
-        double bright = step.getBrightness() * step.getTargetOpacity() * masterBrightness;
-        Color prim = parseHex(step.getPrimaryColor());
+    private Color calculatePreparedCueColor(PreparedCue pc, int pixelIndex, int totalPixels, Point3D p, double timeVal) {
+        double speed = pc.speed;
+        double bright = pc.brightness;
+        Color prim = pc.primaryColor;
 
-        return switch (pat) {
+        return switch (pc.pattern) {
             case "rainbow" -> {
                 double offset = totalPixels > 1 ? (double) pixelIndex / totalPixels : 0.0;
                 float hue = (float) ((offset + timeVal * speed * 0.2) % 1.0);
@@ -803,25 +866,29 @@ public class StageCanvasPanel extends JPanel {
                     worldToScreenX(pN.getX()), worldToScreenY(pN.getY())));
         }
 
-        // Draw individual LED diodes
+        // Draw individual LED diodes (fast primitive rendering - zero object allocations)
         double diodeRadius = Math.max(1.8, Math.min(3.5, zoom * 0.05));
+        int ir = (int) Math.round(diodeRadius);
+        int id = Math.max(2, ir * 2);
+        int igr = ir * 2;
+        int igd = igr * 2;
         int count = points.size();
 
         for (int i = 0; i < count; i++) {
             Point3D p = points.get(i);
-            double sx = worldToScreenX(p.getX());
-            double sy = worldToScreenY(p.getY());
+            int sx = (int) Math.round(worldToScreenX(p.getX()));
+            int sy = (int) Math.round(worldToScreenY(p.getY()));
 
             Color c = (colors != null && i < colors.size()) ? colors.get(i) : Color.DARK_GRAY;
 
             // Diode core
             g2.setColor(c);
-            g2.fill(new Ellipse2D.Double(sx - diodeRadius, sy - diodeRadius, diodeRadius * 2, diodeRadius * 2));
+            g2.fillOval(sx - ir, sy - ir, id, id);
 
             // Subtle glow if bright
             if (c.getRed() + c.getGreen() + c.getBlue() > 100) {
                 g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 60));
-                g2.fill(new Ellipse2D.Double(sx - diodeRadius * 2, sy - diodeRadius * 2, diodeRadius * 4, diodeRadius * 4));
+                g2.fillOval(sx - igr, sy - igr, igd, igd);
             }
         }
     }
@@ -844,13 +911,17 @@ public class StageCanvasPanel extends JPanel {
         g2.setStroke(new BasicStroke(1.8f));
         g2.draw(path);
 
-        // Draw warm Edison-style bulb globes
+        // Draw warm Edison-style bulb globes (fast primitive rendering)
         double bulbRadius = Math.max(3.5, Math.min(7.0, zoom * 0.12));
+        int br = (int) Math.round(bulbRadius);
+        int bd = br * 2;
+        int fr = (int) Math.max(1, Math.round(bulbRadius * 0.45));
+        int fd = fr * 2;
 
         for (int i = 0; i < points.size(); i++) {
             Point3D p = points.get(i);
-            double sx = worldToScreenX(p.getX());
-            double sy = worldToScreenY(p.getY());
+            int sx = (int) Math.round(worldToScreenX(p.getX()));
+            int sy = (int) Math.round(worldToScreenY(p.getY()));
 
             Color c = (colors != null && i < colors.size()) ? colors.get(i) : Color.BLACK;
             boolean isLit = (c.getRed() + c.getGreen() + c.getBlue() > 15);
@@ -858,21 +929,20 @@ public class StageCanvasPanel extends JPanel {
             // Translucent glass globe
             if (isLit) {
                 g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 80));
-                g2.fill(new Ellipse2D.Double(sx - bulbRadius, sy - bulbRadius, bulbRadius * 2, bulbRadius * 2));
+                g2.fillOval(sx - br, sy - br, bd, bd);
             } else {
                 g2.setColor(new Color(25, 25, 30, 100));
-                g2.fill(new Ellipse2D.Double(sx - bulbRadius, sy - bulbRadius, bulbRadius * 2, bulbRadius * 2));
+                g2.fillOval(sx - br, sy - br, bd, bd);
             }
 
             // Glass outline
             g2.setColor(isLit ? new Color(255, 230, 180, 200) : new Color(55, 60, 70, 140));
             g2.setStroke(new BasicStroke(1.0f));
-            g2.draw(new Ellipse2D.Double(sx - bulbRadius, sy - bulbRadius, bulbRadius * 2, bulbRadius * 2));
+            g2.drawOval(sx - br, sy - br, bd, bd);
 
             // Hot inner filament core
             g2.setColor(isLit ? c : new Color(35, 35, 40));
-            double filRad = bulbRadius * 0.45;
-            g2.fill(new Ellipse2D.Double(sx - filRad, sy - filRad, filRad * 2, filRad * 2));
+            g2.fillOval(sx - fr, sy - fr, fd, fd);
         }
     }
 
@@ -890,7 +960,7 @@ public class StageCanvasPanel extends JPanel {
         g2.setStroke(new BasicStroke(1.2f));
         g2.draw(new RoundRectangle2D.Double(sx, sy, sw, sh, 4, 4));
 
-        // High density LED matrix dots
+        // High density LED matrix dots (fast primitive rendering)
         List<Point3D> points = f.getPoints();
         int rCount = f.getRows() > 0 ? f.getRows() : 16;
         int cCount = f.getCols() > 0 ? f.getCols() : 16;
@@ -898,17 +968,19 @@ public class StageCanvasPanel extends JPanel {
         double dotPitchX = sw / Math.max(1, cCount);
         double dotPitchY = sh / Math.max(1, rCount);
         double dotRad = Math.max(1.2, Math.min(2.5, dotPitchX * 0.35));
+        int dr = (int) Math.max(1, Math.round(dotRad));
+        int dd = Math.max(2, dr * 2);
 
         for (int r = 0; r < rCount; r++) {
             for (int c = 0; c < cCount; c++) {
                 int idx = r * cCount + c;
                 Color col = (colors != null && idx < colors.size()) ? colors.get(idx) : Color.BLACK;
 
-                double px = sx + c * dotPitchX + dotPitchX / 2.0;
-                double py = sy + r * dotPitchY + dotPitchY / 2.0;
+                int px = (int) Math.round(sx + c * dotPitchX + dotPitchX / 2.0);
+                int py = (int) Math.round(sy + r * dotPitchY + dotPitchY / 2.0);
 
                 g2.setColor(col);
-                g2.fill(new Ellipse2D.Double(px - dotRad, py - dotRad, dotRad * 2, dotRad * 2));
+                g2.fillOval(px - dr, py - dr, dd, dd);
             }
         }
     }
@@ -923,19 +995,22 @@ public class StageCanvasPanel extends JPanel {
 
         // Chrome stand base
         double baseRadius = Math.max(4.0, zoom * 0.1);
+        int baseR = (int) Math.max(4, Math.round(baseRadius));
+        int baseD = baseR * 2;
         g2.setColor(new Color(30, 42, 60));
-        g2.fill(new Ellipse2D.Double(sx - baseRadius, sy - baseRadius, baseRadius * 2, baseRadius * 2));
+        g2.fillOval((int) Math.round(sx - baseR), (int) Math.round(sy - baseR), baseD, baseD);
         g2.setColor(new Color(120, 160, 210));
         g2.setStroke(new BasicStroke(1.5f));
-        g2.draw(new Ellipse2D.Double(sx - baseRadius, sy - baseRadius, baseRadius * 2, baseRadius * 2));
+        g2.drawOval((int) Math.round(sx - baseR), (int) Math.round(sy - baseR), baseD, baseD);
 
         // Lamp emitter
         g2.setColor(isLit ? c : new Color(20, 20, 25));
-        double emitterRad = baseRadius * 0.6;
-        g2.fill(new Ellipse2D.Double(sx - emitterRad, sy - emitterRad, emitterRad * 2, emitterRad * 2));
+        int emitR = (int) Math.max(2, Math.round(baseRadius * 0.6));
+        int emitD = emitR * 2;
+        g2.fillOval((int) Math.round(sx - emitR), (int) Math.round(sy - emitR), emitD, emitD);
         if (isLit) {
             g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 60));
-            g2.fill(new Ellipse2D.Double(sx - emitterRad * 2, sy - emitterRad * 2, emitterRad * 4, emitterRad * 4));
+            g2.fillOval((int) Math.round(sx - emitR * 2), (int) Math.round(sy - emitR * 2), emitD * 2, emitD * 2);
         }
     }
 
@@ -964,11 +1039,11 @@ public class StageCanvasPanel extends JPanel {
     private void drawGenericFixture(Graphics2D g2, FixtureModel f, List<Color> colors) {
         for (int i = 0; i < f.getPoints().size(); i++) {
             Point3D p = f.getPoints().get(i);
-            double sx = worldToScreenX(p.getX());
-            double sy = worldToScreenY(p.getY());
+            int sx = (int) Math.round(worldToScreenX(p.getX()));
+            int sy = (int) Math.round(worldToScreenY(p.getY()));
             Color c = (colors != null && i < colors.size()) ? colors.get(i) : Color.WHITE;
             g2.setColor(c);
-            g2.fill(new Ellipse2D.Double(sx - 2, sy - 2, 4, 4));
+            g2.fillOval(sx - 2, sy - 2, 4, 4);
         }
     }
 
@@ -1078,4 +1153,13 @@ public class StageCanvasPanel extends JPanel {
         g2.setColor(new Color(90, 215, 130));
         g2.drawString(patchInfo, tx + 10, ty + 70);
     }
+
+    public void zoomBy(double factor) {
+        adjustZoom(factor, getWidth() / 2.0, getHeight() / 2.0);
+    }
+
+    public boolean isGridVisible() { return showGrid; }
+    public boolean isBlueprintVisible() { return showBlueprint; }
+    public boolean isLabelsVisible() { return showLabels; }
+    public boolean isBeamsVisible() { return showBeams; }
 }

@@ -8,7 +8,7 @@ import java.awt.*;
  */
 public class StatusBar extends JPanel {
     private final JLabel lblDocStatus = new JLabel("Document: Saved");
-    private final JLabel lblStatus = new JLabel("Ready");
+    private final JLabel lblStatus = new JLabel("WLED Universe Manager Ready - 28 Fixtures Patched across 20 Nodes");
     private final JLabel lblCues = new JLabel("Cues: 0");
     private final JLabel lblTotalTime = new JLabel("Total: 0.0s");
     private final JLabel lblFps = new JLabel("Engine: -- FPS");

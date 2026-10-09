@@ -1,8 +1,8 @@
-# WLED Multi-Node Lighting Architecture & Sequencer Studio
+# WLED Multi-Node Lighting Architecture & Universe Manager
 
-An enterprise-grade, modular lighting choreography platform designed for real-world multi-controller venue installations (20+ hardwired Cat6 WLED ESP32 boards, overhead festoon strings, matrix panels, floor lamps, and stage trusses) as well as single-strip setups.
+An enterprise-grade, modular lighting choreography and spatial infrastructure management platform designed for real-world multi-controller venue installations (20+ hardwired Cat6 WLED ESP32 boards, overhead festoon strings, matrix panels, floor lamps, and stage trusses) as well as single-strip setups.
 
-The platform provides a **3-tier layered architecture**: a high-throughput **virtual hardware digital twin simulator**, a **headless 10-layer compositing engine and REST daemon**, and a native **Java 17 Swing desktop sequencer studio** with concurrent timeline cue scheduling, 2D spatial venue visualization, and hardware patch editing.
+The platform provides a **3-tier layered architecture**: a high-throughput **virtual hardware digital twin simulator**, a **headless 10-layer compositing engine and REST daemon**, and a native **Java 17 Swing desktop Universe Manager** with concurrent timeline cue scheduling, 2D spatial CAD venue visualization, live hardware patch editing, and controller fleet telemetry.
 
 ---
 
@@ -10,7 +10,7 @@ The platform provides a **3-tier layered architecture**: a high-throughput **vir
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                   TIER 3: DESKTOP SEQUENCER STUDIO [Java 17 Swing]               │
+│                   TIER 3: DESKTOP UNIVERSE MANAGER [Java 17 Swing]               │
 │                                                                                  │
 │   ┌────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────┐   │
 │   │  Timeline & Cue Editor │  │  Spatial Stage Universe  │  │ Controller Fleet│   │
@@ -63,11 +63,13 @@ The platform provides a **3-tier layered architecture**: a high-throughput **vir
    - Evaluates continuous 3D mathematical fields (`SpatialSampler`) and maps them to physical fixtures through the [`PatchTable`](data/venue/patch.json).
    - Serializes contiguous byte buffers for each controller and broadcasts UDP packets via [`MultiNodeDispatcher`](src/wled_engine/fleet/dispatcher.py).
    - Exposes a complete JSON REST API on port `8765` for real-time remote orchestration.
+   - Enforces deterministic 30.00 FPS pacing with microsecond spin-waiting and zero-copy DDP datagram encoding.
 
-3. **Tier 3 — Pattern Sequencer Studio (`sequencer-java`):**
-   - Native Java 17 Swing application built for authoring and live execution.
+3. **Tier 3 — Desktop Universe Manager (`sequencer-java`):**
+   - Native Java 17 Swing application built for authoring, hardware patch validation, and live execution.
    - Communicates with the Python engine daemon over HTTP REST.
    - Provides three specialized workspaces: **Timeline & Cues**, **Spatial Stage Universe**, and **Controller Fleet & Hardware Patch Table**.
+   - Features a dedicated **Universe** menu for managing spatial fixtures, controller fleets, patch tables, and infrastructure validation.
 
 ---
 
@@ -75,7 +77,7 @@ The platform provides a **3-tier layered architecture**: a high-throughput **vir
 
 ### Requirements
 - **Python 3.10+** (with `rich` and `prompt_toolkit` for the terminal visualizer)
-- **Java 17+** and **Maven** (for the native desktop sequencer)
+- **Java 17+** and **Maven** (for the native desktop Universe Manager)
 
 ### 1. Launch the Full Stack (One Command)
 To launch all three layers simultaneously with automatic health monitoring and background process management:
@@ -87,7 +89,7 @@ To launch all three layers simultaneously with automatic health monitoring and b
 This starts:
 1. The **20-Node Virtual Hardware Simulator** (Ports `4048..4067`, Web UI at `http://localhost:8080`)
 2. The **Lighting Engine REST Daemon** (HTTP API at `http://127.0.0.1:8765`)
-3. The **Java Sequencer Studio GUI** (Desktop Swing Window)
+3. The **Java Universe Manager GUI** (Desktop Swing Window)
 
 Pressing <kbd>Ctrl+C</kbd> in your terminal gracefully shuts down all services.
 
@@ -101,15 +103,15 @@ python3 sim.py --venue
 # Terminal 2: Headless Lighting Engine Daemon (REST API: http://127.0.0.1:8765)
 python3 run.py daemon --venue
 
-# Terminal 3: Java Desktop Sequencer Studio
+# Terminal 3: Java Desktop Universe Manager
 ./sequencer-gui
 ```
 
 ---
 
-## 🎛️ WLED Pattern Sequencer Studio [Java 17 Swing]
+## 🎛️ WLED Universe Manager [Java 17 Swing]
 
-The **Pattern Sequencer** (`sequencer-java/`) is a native desktop editor designed for rock-solid temporal lighting choreography and venue management without browser DOM or CSS limitations.
+The **WLED Universe Manager** (`sequencer-java/`) is a native desktop studio designed for venue infrastructure management, real-time spatial inspection, and temporal show choreography without browser DOM or CSS limitations.
 
 Built with clean, standard Swing components and the **Arial** font throughout (no third-party styling bugs, missing letters, or emoji rendering glitches), it provides three dedicated views:
 
@@ -234,7 +236,8 @@ The engine includes a built-in HTTP REST API daemon (`EngineDaemon`) on port `87
 | `GET` | `/api/fleet` | Retrieve Cat6 telemetry (frames sent, bytes, latency) across all controllers |
 | `POST` | `/api/master_brightness` | Adjust global dimmer without losing relative layer balance |
 | `POST` | `/api/cues` | Snapshot all 10 layers as a named cue |
-| `POST` | `/api/cues/{name}/transition`| Smoothly crossfade all layers to a saved cue |
+| `POST` | `/api/sync` | Emit broadcast frame sync datagram (0x41) across Cat6 network |
+| `GET` | `/api/patch` | Retrieve active hardware patch table and collision validation |
 | `POST` | `/api/events` | Publish an event to the reactive rule engine |
 
 ### Example Curl Commands
@@ -353,12 +356,12 @@ Register it in [`src/wled_app/patterns/registry.py`](src/wled_app/patterns/regis
 
 The codebase includes exhaustive test suites covering protocol serialization, compositing math, spatial sampling, and multi-node network dispatch:
 
-### Run Python Tests (121 tests)
+### Run Python Tests (122 tests)
 ```bash
 PYTHONPATH=src python3 -m unittest discover tests
 ```
 
-### Run Java Unit Tests (13 tests)
+### Run Java Unit Tests (14 tests)
 ```bash
 cd sequencer-java && mvn -o test
 ```

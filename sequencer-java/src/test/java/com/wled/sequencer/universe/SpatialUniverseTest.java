@@ -77,5 +77,35 @@ class SpatialUniverseTest {
         assertEquals("wled_01", nodes.get(0).getId());
         assertEquals("10.0.0.101", nodes.get(0).getIp());
         assertEquals(4048, nodes.get(0).getPort());
+
+        // Validate clean patch
+        List<String> errors = patch.validate();
+        assertTrue(errors.isEmpty(), "Venue patch table should have 0 validation errors");
+    }
+
+    @Test
+    void testPatchCollisionDetection() {
+        PatchTableModel patch = new PatchTableModel();
+
+        PatchSegmentModel s1 = new PatchSegmentModel();
+        s1.setControllerId("node_01");
+        s1.setChannelIndex(0);
+        s1.setFixtureId("fix_A");
+        s1.setPortOffset(0);
+        s1.setPixelCount(100);
+
+        PatchSegmentModel s2 = new PatchSegmentModel();
+        s2.setControllerId("node_01");
+        s2.setChannelIndex(0);
+        s2.setFixtureId("fix_B");
+        s2.setPortOffset(50); // overlaps with fix_A [0..100]
+        s2.setPixelCount(100);
+
+        patch.addSegment(s1);
+        patch.addSegment(s2);
+
+        List<String> errors = patch.validate();
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("Port Collision on Controller 'node_01' Channel 0"));
     }
 }

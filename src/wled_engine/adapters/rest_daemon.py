@@ -167,6 +167,11 @@ def handle_rest_request(
             engine.blackout()
             return 200, {"status": "ok", "blackout": True}
 
+        if clean_path == "/api/sync":
+            if engine.dispatcher:
+                engine.dispatcher.emit_broadcast_sync()
+            return 200, {"status": "ok", "sync_emitted": True}
+
         if clean_path == "/api/sequence/play":
             seq = body.get("sequence", body) if body else None
             dilation = body.get("time_dilation") if body else None

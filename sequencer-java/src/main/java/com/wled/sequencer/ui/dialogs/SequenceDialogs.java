@@ -61,6 +61,23 @@ public class SequenceDialogs {
         return sel != null ? sel.data() : null;
     }
 
+    public static String showNewSequenceDialog(Component parent) {
+        JPanel p = new JPanel(new GridLayout(2, 1, 4, 4));
+        p.add(new JLabel("New Show / Sequence Name:"));
+        JTextField txt = new JTextField("Metro Concert Opening Show", 22);
+        txt.selectAll();
+        p.add(txt);
+
+        int res = JOptionPane.showConfirmDialog(parent, p, "Create New Show Sequence",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (res == JOptionPane.OK_OPTION) {
+            String val = txt.getText().trim();
+            return val.isBlank() ? "Untitled Sequence" : val;
+        }
+        return null;
+    }
+
     public static String showSaveAsDialog(Component parent, String currentName) {
         JPanel p = new JPanel(new GridLayout(2, 1, 4, 4));
         p.add(new JLabel("Enter Sequence / File Name:"));
@@ -78,17 +95,37 @@ public class SequenceDialogs {
     }
 
     public static void showAboutDialog(Component parent) {
-        String msg = "WLED Sequence Editor [Java Edition]\n" +
-                "Version 1.0.0 (Java 17 Swing)\n\n" +
-                "Authoring and live orchestration environment for the\n" +
-                "headless WLED Lighting Engine over REST API.\n\n" +
-                "Key Capabilities:\n" +
-                "- Timeline document authoring with dirty-state tracking\n" +
-                "- Concurrent multi-layer cue scheduling (Layers 0-9)\n" +
-                "- Section organization (Start, Stop, Duration)\n" +
-                "- Dynamic pattern and palette discovery\n" +
-                "- Continuous interactive scrubbing and time dilation\n" +
-                "- Server-side deterministic engine synchronization";
-        JOptionPane.showMessageDialog(parent, msg, "About WLED Sequence Editor", JOptionPane.INFORMATION_MESSAGE);
+        String msg = "WLED Universe Manager [Java Desktop Edition]\n" +
+                "Version 2.0.0 (Java 17 Swing)\n\n" +
+                "Multi-Node Lighting Orchestrator & Spatial Digital Twin Studio\n" +
+                "Coordinates 20+ hardwired Cat6 WLED controllers, 5,153+ LEDs, and\n" +
+                "venue spatial arrangement over high-speed DDP UDP sync.\n\n" +
+                "Core Architecture:\n" +
+                "• Universe Management: 28 fixtures across 9 physical venue zones\n" +
+                "• Cat6 Controller Fleet: 20 WLED ESP32 nodes (ports 4048-4067)\n" +
+                "• Hardware Sync: DDP 0x41 broadcast sync with sub-millisecond drift\n" +
+                "• Spatial Sampling: Continuous 3D parametric coordinate mapping\n" +
+                "• Multi-Layer Timeline: 10 concurrent compositing engine layers\n" +
+                "• Performance: Optimized 30 FPS zero-allocation Swing pipeline";
+        JOptionPane.showMessageDialog(parent, msg, "About WLED Universe Manager", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static void showArchitectureGuideDialog(Component parent) {
+        String guide = "=== WLED Multi-Node Universe Architecture ===\n\n" +
+                "1. Tier 1: 20-Node ESP32 Virtual Hardware Simulator\n" +
+                "   • 20 UDP endpoints listening on 0.0.0.0:4048..4067\n" +
+                "   • Hardware integrity engine and telemetry\n" +
+                "   • Browser visualizer at http://localhost:8080\n\n" +
+                "2. Tier 2: Python Lighting Engine REST Daemon\n" +
+                "   • High-precision monotonic frame clock (30 FPS)\n" +
+                "   • Continuous 3D spatial field sampling\n" +
+                "   • Patch routing across Cat6 switch\n" +
+                "   • REST JSON API on http://127.0.0.1:8765\n\n" +
+                "3. Tier 3: WLED Universe Manager (Java Desktop Edition)\n" +
+                "   • Venue blueprint & 28-fixture spatial canvas\n" +
+                "   • Controller fleet & hardware patch editor\n" +
+                "   • Multi-layer timeline sequence authoring\n" +
+                "   • Real-time atomic blackout & 0x41 DDP broadcast sync";
+        JOptionPane.showMessageDialog(parent, guide, "WLED Architecture & Protocol Guide", JOptionPane.INFORMATION_MESSAGE);
     }
 }

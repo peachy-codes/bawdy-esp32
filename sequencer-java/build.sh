@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "🔨 Compiling WLED Pattern Sequencer [Java 17]..."
+echo "🔨 Compiling WLED Universe Manager [Java 17]..."
 mvn compile -o
 
 echo "📦 Packaging standalone wled-sequencer.jar..."

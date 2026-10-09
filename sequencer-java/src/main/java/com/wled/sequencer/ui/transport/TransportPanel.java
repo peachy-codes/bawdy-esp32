@@ -111,6 +111,7 @@ public class TransportPanel extends JPanel {
 
         setupEventBindings();
         checkEngineHealth();
+        setupHeartbeatTimer();
     }
 
     private void setupEventBindings() {
@@ -226,19 +227,36 @@ public class TransportPanel extends JPanel {
         btnStop.setEnabled(isPlaying || isPaused);
     }
 
+    private java.util.function.Consumer<Double> onFpsUpdatedListener = null;
+
+    public void setOnFpsUpdatedListener(java.util.function.Consumer<Double> listener) {
+        this.onFpsUpdatedListener = listener;
+    }
+
     private void checkEngineHealth() {
         if (engineClient == null) return;
-        lblDaemonStatus.setText("[Checking...]");
-        lblDaemonStatus.setForeground(Color.GRAY);
 
         engineClient.ping().thenAccept(status -> SwingUtilities.invokeLater(() -> {
             if (status.isRunning() || "ok".equalsIgnoreCase(status.getStatus())) {
-                lblDaemonStatus.setText(String.format("[Online (%.1f FPS)]", status.getActualFps()));
+                double fps = status.getActualFps();
+                lblDaemonStatus.setText(String.format("[Online (%.1f FPS)]", fps));
                 lblDaemonStatus.setForeground(new Color(25, 135, 45));
+                if (onFpsUpdatedListener != null) {
+                    onFpsUpdatedListener.accept(fps);
+                }
             } else {
                 lblDaemonStatus.setText("[Offline]");
                 lblDaemonStatus.setForeground(new Color(200, 30, 30));
+                if (onFpsUpdatedListener != null) {
+                    onFpsUpdatedListener.accept(0.0);
+                }
             }
         }));
+    }
+
+    private void setupHeartbeatTimer() {
+        javax.swing.Timer timer = new javax.swing.Timer(2000, e -> checkEngineHealth());
+        timer.setRepeats(true);
+        timer.start();
     }
 }

@@ -60,6 +60,30 @@ class TestDdpEmitter(unittest.TestCase):
         self.assertEqual(offset_p2, 480 * 3)
         self.assertEqual(len_p2, 120 * 3)
 
+    def test_ddp_encode_raw_bytes(self) -> None:
+        emitter = DdpEmitter(max_leds_per_packet=480)
+        # 600 LEDs * 3 = 1800 raw bytes
+        raw_rgb = bytearray(600 * 3)
+        raw_rgb[0] = 255  # First red
+        raw_rgb[1799] = 200  # Last blue
+
+        packets = emitter.encode_raw_bytes(raw_rgb)
+        self.assertEqual(len(packets), 2)
+
+        # Check packet 1
+        flags1_p1, _, _, _, offset_p1, len_p1 = struct.unpack(">BBBB I H", packets[0][:10])
+        self.assertEqual(flags1_p1, 0x40)
+        self.assertEqual(offset_p1, 0)
+        self.assertEqual(len_p1, 480 * 3)
+        self.assertEqual(packets[0][10], 255)
+
+        # Check packet 2
+        flags1_p2, _, _, _, offset_p2, len_p2 = struct.unpack(">BBBB I H", packets[1][:10])
+        self.assertEqual(flags1_p2, 0x41)  # Push flag set on last chunk
+        self.assertEqual(offset_p2, 480 * 3)
+        self.assertEqual(len_p2, 120 * 3)
+        self.assertEqual(packets[1][-1], 200)
+
 
 class TestDrgbEmitter(unittest.TestCase):
     def test_drgb_header_and_data(self) -> None:

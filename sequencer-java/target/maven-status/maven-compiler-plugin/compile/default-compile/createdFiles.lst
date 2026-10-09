@@ -18,6 +18,7 @@ com/wled/sequencer/client/EngineStatus.class
 com/wled/sequencer/ui/dialogs/SequenceDialogs$1.class
 com/wled/sequencer/ui/fleet/FleetPanel$PatchSegmentTableModel.class
 com/wled/sequencer/ui/MainWindow.class
+com/wled/sequencer/ui/canvas/StageCanvasPanel$PreparedCue.class
 com/wled/sequencer/model/SequenceSummary.class
 com/wled/sequencer/universe/BoundingBox3D.class
 com/wled/sequencer/universe/PatchSegmentModel.class
