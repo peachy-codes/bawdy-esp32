@@ -1,0 +1,654 @@
+{
+  "name": "Warehouse Rave & Boiler Stage",
+  "bounding_box": {
+    "min_x": -6.8,
+    "min_y": -8.5,
+    "min_z": 0.0,
+    "max_x": 6.8,
+    "max_y": 6.8,
+    "max_z": 4.5,
+    "width": 13.6,
+    "height": 15.3,
+    "depth": 4.5
+  },
+  "total_pixels": 4197,
+  "fixtures": [
+    {
+      "type": "linear_strip",
+      "id": "cage_roof_north",
+      "name": "DJ Cage North Roof Beam",
+      "pixel_count": 200,
+      "waypoints": [
+        {
+          "x": -2.0,
+          "y": 2.0,
+          "z": 3.8
+        },
+        {
+          "x": 2.0,
+          "y": 2.0,
+          "z": 3.8
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "north",
+        "roof"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "cage_roof_south",
+      "name": "DJ Cage South Roof Beam",
+      "pixel_count": 200,
+      "waypoints": [
+        {
+          "x": -2.0,
+          "y": -2.0,
+          "z": 3.8
+        },
+        {
+          "x": 2.0,
+          "y": -2.0,
+          "z": 3.8
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "roof",
+        "south"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "cage_roof_west",
+      "name": "DJ Cage West Roof Beam",
+      "pixel_count": 200,
+      "waypoints": [
+        {
+          "x": -2.0,
+          "y": -2.0,
+          "z": 3.8
+        },
+        {
+          "x": -2.0,
+          "y": 2.0,
+          "z": 3.8
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "roof",
+        "west"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "cage_roof_east",
+      "name": "DJ Cage East Roof Beam",
+      "pixel_count": 200,
+      "waypoints": [
+        {
+          "x": 2.0,
+          "y": -2.0,
+          "z": 3.8
+        },
+        {
+          "x": 2.0,
+          "y": 2.0,
+          "z": 3.8
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "east",
+        "roof"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "cage_pylon_nw",
+      "name": "DJ Cage NW Corner Pylon",
+      "pixel_count": 150,
+      "waypoints": [
+        {
+          "x": -2.0,
+          "y": 2.0,
+          "z": 3.8
+        },
+        {
+          "x": -2.0,
+          "y": 2.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "nw",
+        "upright"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "cage_pylon_ne",
+      "name": "DJ Cage NE Corner Pylon",
+      "pixel_count": 150,
+      "waypoints": [
+        {
+          "x": 2.0,
+          "y": 2.0,
+          "z": 3.8
+        },
+        {
+          "x": 2.0,
+          "y": 2.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "ne",
+        "upright"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "cage_pylon_sw",
+      "name": "DJ Cage SW Corner Pylon",
+      "pixel_count": 150,
+      "waypoints": [
+        {
+          "x": -2.0,
+          "y": -2.0,
+          "z": 3.8
+        },
+        {
+          "x": -2.0,
+          "y": -2.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "sw",
+        "upright"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "cage_pylon_se",
+      "name": "DJ Cage SE Corner Pylon",
+      "pixel_count": 150,
+      "waypoints": [
+        {
+          "x": 2.0,
+          "y": -2.0,
+          "z": 3.8
+        },
+        {
+          "x": 2.0,
+          "y": -2.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "dj_cage",
+      "color_order": "GRB",
+      "tags": [
+        "cage",
+        "se",
+        "upright"
+      ]
+    },
+    {
+      "type": "point",
+      "id": "strobe_cage_nw",
+      "name": "NW Cage Strobe Blinder",
+      "location": {
+        "x": -2.0,
+        "y": 2.0,
+        "z": 4.0
+      },
+      "pixel_count": 1,
+      "radius": 0.4,
+      "group": "strobes",
+      "color_order": "GRB",
+      "tags": [
+        "blinder",
+        "strobe"
+      ]
+    },
+    {
+      "type": "point",
+      "id": "strobe_cage_ne",
+      "name": "NE Cage Strobe Blinder",
+      "location": {
+        "x": 2.0,
+        "y": 2.0,
+        "z": 4.0
+      },
+      "pixel_count": 1,
+      "radius": 0.4,
+      "group": "strobes",
+      "color_order": "GRB",
+      "tags": [
+        "blinder",
+        "strobe"
+      ]
+    },
+    {
+      "type": "point",
+      "id": "strobe_cage_sw",
+      "name": "SW Cage Strobe Blinder",
+      "location": {
+        "x": -2.0,
+        "y": -2.0,
+        "z": 4.0
+      },
+      "pixel_count": 1,
+      "radius": 0.4,
+      "group": "strobes",
+      "color_order": "GRB",
+      "tags": [
+        "blinder",
+        "strobe"
+      ]
+    },
+    {
+      "type": "point",
+      "id": "strobe_cage_se",
+      "name": "SE Cage Strobe Blinder",
+      "location": {
+        "x": 2.0,
+        "y": -2.0,
+        "z": 4.0
+      },
+      "pixel_count": 1,
+      "radius": 0.4,
+      "group": "strobes",
+      "color_order": "GRB",
+      "tags": [
+        "blinder",
+        "strobe"
+      ]
+    },
+    {
+      "type": "matrix",
+      "id": "matrix_north_wall",
+      "name": "North Wall Video Matrix (16x16)",
+      "rows": 16,
+      "cols": 16,
+      "origin": {
+        "x": -1.0,
+        "y": 6.5,
+        "z": 1.5
+      },
+      "width": 2.0,
+      "height": 2.0,
+      "serpentine": true,
+      "vertical": false,
+      "start_corner": "top_left",
+      "group": "matrices",
+      "color_order": "GRB",
+      "tags": [
+        "matrix",
+        "north",
+        "wall"
+      ]
+    },
+    {
+      "type": "matrix",
+      "id": "matrix_south_wall",
+      "name": "South Wall Video Matrix (16x16)",
+      "rows": 16,
+      "cols": 16,
+      "origin": {
+        "x": -1.0,
+        "y": -6.5,
+        "z": 1.5
+      },
+      "width": 2.0,
+      "height": 2.0,
+      "serpentine": true,
+      "vertical": false,
+      "start_corner": "top_left",
+      "group": "matrices",
+      "color_order": "GRB",
+      "tags": [
+        "matrix",
+        "south",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "totem_dancefloor_fl",
+      "name": "Front Left Dancefloor Totem",
+      "pixel_count": 160,
+      "waypoints": [
+        {
+          "x": -4.5,
+          "y": 4.0,
+          "z": 3.2
+        },
+        {
+          "x": -4.5,
+          "y": 4.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "totems",
+      "color_order": "GRB",
+      "tags": [
+        "column",
+        "totem"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "totem_dancefloor_fr",
+      "name": "Front Right Dancefloor Totem",
+      "pixel_count": 160,
+      "waypoints": [
+        {
+          "x": 4.5,
+          "y": 4.0,
+          "z": 3.2
+        },
+        {
+          "x": 4.5,
+          "y": 4.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "totems",
+      "color_order": "GRB",
+      "tags": [
+        "column",
+        "totem"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "totem_dancefloor_rl",
+      "name": "Rear Left Dancefloor Totem",
+      "pixel_count": 160,
+      "waypoints": [
+        {
+          "x": -4.5,
+          "y": -4.0,
+          "z": 3.2
+        },
+        {
+          "x": -4.5,
+          "y": -4.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "totems",
+      "color_order": "GRB",
+      "tags": [
+        "column",
+        "totem"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "totem_dancefloor_rr",
+      "name": "Rear Right Dancefloor Totem",
+      "pixel_count": 160,
+      "waypoints": [
+        {
+          "x": 4.5,
+          "y": -4.0,
+          "z": 3.2
+        },
+        {
+          "x": 4.5,
+          "y": -4.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "totems",
+      "color_order": "GRB",
+      "tags": [
+        "column",
+        "totem"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "batten_wall_north",
+      "name": "North Wall Pixel Batten",
+      "pixel_count": 240,
+      "waypoints": [
+        {
+          "x": -6.5,
+          "y": 6.8,
+          "z": 0.2
+        },
+        {
+          "x": 6.5,
+          "y": 6.8,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "perimeter",
+      "color_order": "GRB",
+      "tags": [
+        "batten",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "batten_wall_south",
+      "name": "South Wall Pixel Batten",
+      "pixel_count": 240,
+      "waypoints": [
+        {
+          "x": -6.5,
+          "y": -6.8,
+          "z": 0.2
+        },
+        {
+          "x": 6.5,
+          "y": -6.8,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "perimeter",
+      "color_order": "GRB",
+      "tags": [
+        "batten",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "batten_wall_west",
+      "name": "West Wall Pixel Batten",
+      "pixel_count": 240,
+      "waypoints": [
+        {
+          "x": -6.8,
+          "y": -6.5,
+          "z": 0.2
+        },
+        {
+          "x": -6.8,
+          "y": 6.5,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "perimeter",
+      "color_order": "GRB",
+      "tags": [
+        "batten",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "batten_wall_east",
+      "name": "East Wall Pixel Batten",
+      "pixel_count": 240,
+      "waypoints": [
+        {
+          "x": 6.8,
+          "y": -6.5,
+          "z": 0.2
+        },
+        {
+          "x": 6.8,
+          "y": 6.5,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "perimeter",
+      "color_order": "GRB",
+      "tags": [
+        "batten",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "beam_cross_diag_1",
+      "name": "Overhead Cross Truss Beam A",
+      "pixel_count": 220,
+      "waypoints": [
+        {
+          "x": -6.0,
+          "y": -6.0,
+          "z": 4.5
+        },
+        {
+          "x": 6.0,
+          "y": 6.0,
+          "z": 4.5
+        }
+      ],
+      "reversed": false,
+      "group": "overhead_beams",
+      "color_order": "GRB",
+      "tags": [
+        "beam",
+        "overhead"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "beam_cross_diag_2",
+      "name": "Overhead Cross Truss Beam B",
+      "pixel_count": 220,
+      "waypoints": [
+        {
+          "x": -6.0,
+          "y": 6.0,
+          "z": 4.5
+        },
+        {
+          "x": 6.0,
+          "y": -6.0,
+          "z": 4.5
+        }
+      ],
+      "reversed": false,
+      "group": "overhead_beams",
+      "color_order": "GRB",
+      "tags": [
+        "beam",
+        "overhead"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "center_halo_ring",
+      "name": "Center DJ Overhead Square Halo",
+      "pixel_count": 240,
+      "waypoints": [
+        {
+          "x": -1.5,
+          "y": -1.5,
+          "z": 4.2
+        },
+        {
+          "x": 1.5,
+          "y": -1.5,
+          "z": 4.2
+        },
+        {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 4.2
+        },
+        {
+          "x": -1.5,
+          "y": 1.5,
+          "z": 4.2
+        },
+        {
+          "x": -1.5,
+          "y": -1.5,
+          "z": 4.2
+        }
+      ],
+      "reversed": false,
+      "group": "overhead_beams",
+      "color_order": "GRB",
+      "tags": [
+        "center",
+        "halo"
+      ]
+    },
+    {
+      "type": "projector",
+      "id": "projector_hologram_booth",
+      "name": "DJ Hologram Projection Field",
+      "top_left": {
+        "x": -1.8,
+        "y": 2.0,
+        "z": 3.5
+      },
+      "bottom_right": {
+        "x": 1.8,
+        "y": -2.0,
+        "z": 0.5
+      },
+      "resolution_x": 1920,
+      "resolution_y": 1080,
+      "group": "projectors",
+      "tags": []
+    }
+  ]
+}

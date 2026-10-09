@@ -123,6 +123,13 @@ def handle_rest_request(
                 "fixtures": [f.to_dict() for f in engine.universe.fixtures],
             }
 
+        if clean_path == "/api/universe/presets":
+            from wled_engine.spatial.venue import list_preset_names
+            return 200, {
+                "status": "ok",
+                "presets": list_preset_names(),
+            }
+
         if clean_path.startswith("/api/universe/fixtures/"):
             parts = clean_path.split("/")
             if len(parts) == 5:
@@ -291,11 +298,20 @@ def handle_rest_request(
             return 200, {"status": "ok", "event": name, "executed_actions": actions}
 
         if clean_path == "/api/universe":
-            if body.get("preset") == "venue":
-                from wled_engine.spatial.venue import create_demo_venue
-                u, p = create_demo_venue()
-                engine.setup_universe(u, p, dry_run=engine.dry_run)
-                return 200, {"status": "ok", "universe": u.to_dict(), "patch": p.to_dict()}
+            if "preset" in body and body["preset"]:
+                from wled_engine.spatial.venue import get_preset_venue
+                preset_name = str(body["preset"])
+                try:
+                    u, p = get_preset_venue(preset_name)
+                    engine.setup_universe(u, p, dry_run=engine.dry_run)
+                    return 200, {
+                        "status": "ok",
+                        "preset": preset_name,
+                        "universe": u.to_dict(),
+                        "patch": p.to_dict(),
+                    }
+                except KeyError as e:
+                    return 400, {"status": "error", "message": str(e)}
             elif "universe" in body and isinstance(body["universe"], dict):
                 from wled_engine.spatial.universe import SpatialUniverse
                 u = SpatialUniverse.from_dict(body["universe"])

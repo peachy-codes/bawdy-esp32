@@ -207,11 +207,14 @@ def cmd_daemon(args: argparse.Namespace, console: Console, repo: DeviceRepositor
     engine = LightingEngine(target_fps=args.fps, dry_run=args.dry_run)
     device = None
 
-    if getattr(args, "venue", False) or getattr(args, "universe", None):
+    if getattr(args, "venue", False) or getattr(args, "universe", None) or getattr(args, "preset", None):
         from pathlib import Path
         from wled_engine.spatial.universe import SpatialUniverse
         from wled_engine.patch.patch_table import PatchTable
-        if getattr(args, "venue", False):
+        if getattr(args, "preset", None):
+            from wled_engine.spatial.venue import get_preset_venue
+            universe, patch_table = get_preset_venue(args.preset)
+        elif getattr(args, "venue", False):
             from wled_engine.spatial.venue import create_demo_venue
             universe, patch_table = create_demo_venue()
         else:
@@ -359,6 +362,7 @@ def build_parser() -> argparse.ArgumentParser:
     # Daemon
     p_daemon = subparsers.add_parser("daemon", help="Run the headless REST Engine Daemon")
     p_daemon.add_argument("--venue", action="store_true", help="Configure full 20-node multi-controller venue universe")
+    p_daemon.add_argument("--preset", default=None, help="Preset stage universe name (concert_hall, warehouse_rave, festival_amphitheater, art_gallery)")
     p_daemon.add_argument("--universe", default=None, help="Path to SpatialUniverse JSON file")
     p_daemon.add_argument("--patch", default=None, help="Path to PatchTable JSON file")
     p_daemon.add_argument("--device", help="Device name or ID to attach")

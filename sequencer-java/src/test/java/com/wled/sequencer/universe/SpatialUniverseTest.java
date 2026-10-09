@@ -108,4 +108,32 @@ class SpatialUniverseTest {
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("Port Collision on Controller 'node_01' Channel 0"));
     }
+
+    @Test
+    void testLoadAllPresetStages() throws Exception {
+        String[] presets = {"concert_hall", "warehouse_rave", "festival_amphitheater", "art_gallery"};
+        for (String preset : presets) {
+            Path uniPath = Path.of("..", "data", "presets", preset, "universe.json");
+            if (!uniPath.toFile().exists()) {
+                uniPath = Path.of("data", "presets", preset, "universe.json");
+            }
+            assertTrue(uniPath.toFile().exists(), "Preset universe.json must exist: " + uniPath);
+            SpatialUniverseModel universe = SpatialUniverseModel.loadFromFile(uniPath);
+            assertNotNull(universe, "Failed to load universe for preset: " + preset);
+            assertFalse(universe.getFixtures().isEmpty(), "Fixtures empty for preset: " + preset);
+            assertTrue(universe.getTotalPixels() > 0, "Pixel count must be positive for: " + preset);
+            assertFalse(universe.getGroups().isEmpty(), "Groups must not be empty for: " + preset);
+
+            Path patchPath = Path.of("..", "data", "presets", preset, "patch.json");
+            if (!patchPath.toFile().exists()) {
+                patchPath = Path.of("data", "presets", preset, "patch.json");
+            }
+            assertTrue(patchPath.toFile().exists(), "Preset patch.json must exist: " + patchPath);
+            PatchTableModel patch = PatchTableModel.loadFromFile(patchPath);
+            assertNotNull(patch, "Failed to load patch for preset: " + preset);
+            assertFalse(patch.getSegments().isEmpty(), "Segments empty for preset: " + preset);
+            List<String> errors = patch.validate();
+            assertTrue(errors.isEmpty(), "Preset patch table must have 0 errors for " + preset + ": " + errors);
+        }
+    }
 }

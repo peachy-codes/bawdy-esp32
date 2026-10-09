@@ -98,14 +98,42 @@ Each layer can also be run independently in separate terminal windows:
 
 ```bash
 # Terminal 1: 20-Node Hardware Digital Twin Simulator (Web UI: http://localhost:8080)
-python3 sim.py --venue
+python3 sim.py --venue                        # Default: Metro Concert Hall (20 nodes)
+python3 sim.py --preset warehouse_rave        # Or specify any preset stage
 
 # Terminal 2: Headless Lighting Engine Daemon (REST API: http://127.0.0.1:8765)
-python3 run.py daemon --venue
+python3 run.py daemon --venue                 # Default: Metro Concert Hall (20 nodes)
+python3 run.py daemon --preset warehouse_rave # Or specify any preset stage
 
 # Terminal 3: Java Desktop Universe Manager
 ./sequencer-gui
 ```
+
+---
+
+## 🏛️ Built-In Venue Stages & Preset Universes
+
+The platform includes 4 production-grade venue stages out of the box, complete with realistic 3D Cartesian coordinates, fixture zones (groups), Cat6 controller node assignments, and 0-collision hardware patch tables:
+
+| Preset Stage | Code ID | Controllers | Fixtures | Pixels | Zones / Groups | Highlights |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Metro Concert Hall & Lounge** | `concert_hall` | 20 nodes (`wled_01..20`) | 28 | 5,153 | `trusses`, `festoon`, `panels`, `lamps`, `perimeter`, `projectors`, `stage`, `bar`, `ceiling` | Structural truss box, 4 catenary festoon bulb strings, 3x 16×16 matrices, floor accent lamps, projector surface. |
+| **Warehouse Rave & Boiler Stage** | `warehouse_rave` | 16 nodes (`wled_01..16`) | 26 | 4,197 | `dj_cage`, `strobes`, `matrices`, `totems`, `perimeter`, `overhead_beams`, `projectors` | 360° central DJ cage with 4 corner uprights, 4 high-output strobe blinders, dual 16×16 industrial matrix walls, 4 ground totems, diagonal overhead cross-beams. |
+| **Outdoor Amphitheater & Lawn** | `festival_amphitheater` | 16 nodes (`wled_01..16`) | 24 | 3,805 | `proscenium`, `canopy`, `stage_deck`, `imag_screens`, `delay_towers`, `foh_booth`, `vip_garden`, `projectors` | Grand curved proscenium arch, 6 swooping festoon strings reaching deep into the lawn, center catwalk runway, dual 16×16 IMAG screens, 4 audio delay towers, FOH sound booth surround. |
+| **Immersive Art Gallery & Studio** | `art_gallery` | 12 nodes (`wled_01..12`) | 22 | 2,821 | `ceiling_halos`, `wall_blades`, `sculpture`, `floor_tracks`, `museum_spots`, `projectors` | 3 concentric floating hexagonal ceiling halos, 8 vertical wall light blades, centerpiece sculpture pedestal with 16×16 interactive top matrix and base glow, 4 floor runners, museum accent spots. |
+
+### Switching Presets
+
+1. **Desktop Universe Manager (Java):**
+   - Click the **Stage Preset** dropdown directly in the top toolbar of the **Spatial Stage Universe** tab, or
+   - Select **Universe → Load Preset Stage & Universe → [Preset Name]** in the main menu bar.
+   - The CAD canvas automatically auto-fits (`Fit Stage`), the Fixture tree updates, and Controller Fleet and Hardware Patch tables are reloaded instantly.
+2. **REST API Daemon:**
+   - Query all available presets: `GET /api/universe/presets`
+   - Switch active stage live: `POST /api/universe` with payload `{"preset": "warehouse_rave"}`
+3. **CLI Arguments:**
+   - `python3 sim.py --preset art_gallery`
+   - `python3 run.py daemon --preset festival_amphitheater`
 
 ---
 
@@ -237,6 +265,8 @@ The engine includes a built-in HTTP REST API daemon (`EngineDaemon`) on port `87
 | `POST` | `/api/master_brightness` | Adjust global dimmer without losing relative layer balance |
 | `POST` | `/api/cues` | Snapshot all 10 layers as a named cue |
 | `POST` | `/api/sync` | Emit broadcast frame sync datagram (0x41) across Cat6 network |
+| `GET` | `/api/universe/presets` | List catalog of available venue presets with fixture, pixel, and zone metadata |
+| `POST` | `/api/universe` | Switch active venue universe (`{"preset": "warehouse_rave"}`) |
 | `GET` | `/api/patch` | Retrieve active hardware patch table and collision validation |
 | `POST` | `/api/events` | Publish an event to the reactive rule engine |
 
@@ -356,12 +386,12 @@ Register it in [`src/wled_app/patterns/registry.py`](src/wled_app/patterns/regis
 
 The codebase includes exhaustive test suites covering protocol serialization, compositing math, spatial sampling, and multi-node network dispatch:
 
-### Run Python Tests (122 tests)
+### Run Python Tests (129 tests)
 ```bash
 PYTHONPATH=src python3 -m unittest discover tests
 ```
 
-### Run Java Unit Tests (14 tests)
+### Run Java Unit Tests (15 tests)
 ```bash
 cd sequencer-java && mvn -o test
 ```

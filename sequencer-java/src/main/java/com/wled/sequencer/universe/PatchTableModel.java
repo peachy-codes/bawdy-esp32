@@ -143,12 +143,12 @@ public class PatchTableModel {
         for (String cid : controllerIds) {
             ControllerNodeModel node = new ControllerNodeModel();
             node.setId(cid);
-            node.setName(getDescriptiveControllerName(cid));
+            List<PatchSegmentModel> nodeSegs = getSegmentsForController(cid);
+            node.setName(getDescriptiveControllerName(cid, nodeSegs));
             node.setIp(String.format("10.0.0.%d", 100 + index));
             node.setPort(4048 + (index - 1));
             node.setProtocol("DDP (Distributed Display Protocol)");
 
-            List<PatchSegmentModel> nodeSegs = getSegmentsForController(cid);
             int sumPixels = 0;
             Set<Integer> channels = new TreeSet<>();
             Set<String> fixtures = new LinkedHashSet<>();
@@ -175,30 +175,26 @@ public class PatchTableModel {
         return nodes;
     }
 
-    private String getDescriptiveControllerName(String cid) {
-        return switch (cid.toLowerCase()) {
-            case "wled_01" -> "Front Stage Truss Span [Master A]";
-            case "wled_02" -> "Front Stage Truss Span [Master B]";
-            case "wled_03" -> "Front Left Truss Upright";
-            case "wled_04" -> "Front Right Truss Upright";
-            case "wled_05" -> "Rear Stage Truss Span [Master A]";
-            case "wled_06" -> "Rear Stage Truss Span [Master B]";
-            case "wled_07" -> "Rear Left Truss Upright";
-            case "wled_08" -> "Rear Right Truss Upright";
-            case "wled_09" -> "Left Stage Wing Overhead";
-            case "wled_10" -> "Right Stage Wing Overhead";
-            case "wled_11" -> "Stage Deck Front Lip Underglow";
-            case "wled_12" -> "DJ Riser Front Facade Strip";
-            case "wled_13" -> "Stage Left Wall Matrix Panel (16x16)";
-            case "wled_14" -> "Stage Right Wall Matrix Panel (16x16)";
-            case "wled_15" -> "DJ Booth Front Matrix Panel (16x16)";
-            case "wled_16" -> "Canopy Festoon Left Diagonal";
-            case "wled_17" -> "Canopy Festoon Right Diagonal";
-            case "wled_18" -> "Perimeter Hall Ambient Strip [Left]";
-            case "wled_19" -> "Perimeter Hall Ambient Strip [Right]";
-            case "wled_20" -> "Floor Lamps & Projector Viewport Bus";
-            default -> "WLED Node " + cid;
-        };
+    private String getDescriptiveControllerName(String cid, List<PatchSegmentModel> nodeSegs) {
+        if (nodeSegs != null && !nodeSegs.isEmpty()) {
+            List<String> fixNames = nodeSegs.stream()
+                    .map(PatchSegmentModel::getFixtureId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .limit(2)
+                    .map(this::formatFixtureIdAsRole)
+                    .toList();
+            if (!fixNames.isEmpty()) {
+                return String.join(" + ", fixNames);
+            }
+        }
+        return "Cat6 WLED Node " + cid;
+    }
+
+    private String formatFixtureIdAsRole(String fid) {
+        return Arrays.stream(fid.replace('_', ' ').split("\\s+"))
+                .map(w -> w.isEmpty() ? "" : Character.toUpperCase(w.charAt(0)) + w.substring(1).toLowerCase())
+                .collect(Collectors.joining(" "));
     }
 
     // Getters and Setters

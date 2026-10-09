@@ -215,6 +215,10 @@ public class EngineClient {
         return sendJsonPost("/api/sync", Map.of());
     }
 
+    public CompletableFuture<Void> loadUniversePreset(String presetName) {
+        return sendJsonPost("/api/universe", Map.of("preset", presetName));
+    }
+
     private CompletableFuture<Void> sendJsonPost(String endpoint, Map<String, Object> data) {
         try {
             String json = mapper.writeValueAsString(data);

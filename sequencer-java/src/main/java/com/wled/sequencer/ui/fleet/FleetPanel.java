@@ -34,6 +34,7 @@ public class FleetPanel extends JPanel {
     private final JTable segmentTable;
 
     private final JLabel lblFleetSummary = new JLabel("Loading controller fleet...");
+    private final JTabbedPane tabbedPane = new JTabbedPane();
 
     public FleetPanel(SpatialUniverseModel universe, PatchTableModel patchTable, EngineClient engineClient) {
         this.universe = universe;
@@ -57,7 +58,6 @@ public class FleetPanel extends JPanel {
         add(createSummaryBanner(), BorderLayout.NORTH);
 
         // 2. Center Tabbed Tables: [Controller Nodes] and [Hardware Patch Segments]
-        JTabbedPane tabbedPane = new JTabbedPane();
 
         // Nodes Tab
         configureNodeTable();
@@ -494,6 +494,10 @@ public class FleetPanel extends JPanel {
             this.nodes.addAll(newPatch.generateControllerNodes());
             this.nodeTableModel.fireTableDataChanged();
             this.segmentTableModel.setSegments(newPatch.getSegments());
+            if (tabbedPane.getTabCount() >= 2) {
+                tabbedPane.setTitleAt(0, "Controller Fleet (" + nodes.size() + " Nodes)");
+                tabbedPane.setTitleAt(1, "Patch Table (" + newPatch.getSegments().size() + " Segments)");
+            }
             updateSummaryText();
         }
     }

@@ -41,6 +41,11 @@ def parse_args() -> argparse.ArgumentParser:
         help="Configure full 20-node multi-controller venue universe",
     )
     parser.add_argument(
+        "--preset",
+        default=None,
+        help="Stage universe preset name (concert_hall, warehouse_rave, festival_amphitheater, art_gallery)",
+    )
+    parser.add_argument(
         "--universe",
         default=None,
         help="Path to SpatialUniverse JSON file",
@@ -86,11 +91,14 @@ def main() -> None:
     engine = LightingEngine(target_fps=args.fps, dry_run=args.dry_run)
 
     # Register universe or device
-    if args.venue or args.universe:
+    if args.venue or args.universe or args.preset:
         from pathlib import Path
         from wled_engine.spatial.universe import SpatialUniverse
         from wled_engine.patch.patch_table import PatchTable
-        if args.venue:
+        if args.preset:
+            from wled_engine.spatial.venue import get_preset_venue
+            universe, patch_table = get_preset_venue(args.preset)
+        elif args.venue:
             from wled_engine.spatial.venue import create_demo_venue
             universe, patch_table = create_demo_venue()
         else:

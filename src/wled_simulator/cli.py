@@ -52,6 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Launch full 20-node multi-controller venue simulation (Metro Concert Hall & Lounge)",
     )
     parser.add_argument(
+        "--preset",
+        default=None,
+        help="Stage universe preset name (concert_hall, warehouse_rave, festival_amphitheater, art_gallery)",
+    )
+    parser.add_argument(
         "--universe",
         default=None,
         help="Path to SpatialUniverse JSON file (enables multi-fixture universe mode)",
@@ -115,9 +120,12 @@ def main() -> None:
 
     console = Console()
 
-    if args.venue or args.universe:
+    if args.venue or args.universe or args.preset:
         from pathlib import Path
-        if args.venue:
+        if args.preset:
+            from wled_engine.spatial.venue import get_preset_venue
+            universe, patch_table = get_preset_venue(args.preset)
+        elif args.venue:
             from wled_engine.spatial.venue import create_demo_venue
             universe, patch_table = create_demo_venue()
         else:

@@ -45,6 +45,11 @@ class SpatialUniverse:
         """Total LED pixel count across all fixtures."""
         return sum(f.pixel_count for f in self._fixtures.values())
 
+    @property
+    def groups(self) -> list[str]:
+        """List all unique fixture group names."""
+        return self.get_groups()
+
     def get_groups(self) -> list[str]:
         """List all unique fixture group names."""
         return sorted(list({f.group for f in self._fixtures.values()}))

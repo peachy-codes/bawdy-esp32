@@ -1,0 +1,628 @@
+{
+  "name": "Outdoor Amphitheater & Lawn",
+  "bounding_box": {
+    "min_x": -9.0,
+    "min_y": -7.5,
+    "min_z": 0.0,
+    "max_x": 9.0,
+    "max_y": 7.2,
+    "max_z": 6.1968,
+    "width": 18.0,
+    "height": 14.7,
+    "depth": 6.1968
+  },
+  "total_pixels": 3805,
+  "fixtures": [
+    {
+      "type": "linear_strip",
+      "id": "arch_proscenium_outer",
+      "name": "Grand Proscenium Outer Arch",
+      "pixel_count": 450,
+      "waypoints": [
+        {
+          "x": -7.0,
+          "y": 6.0,
+          "z": 0.0
+        },
+        {
+          "x": -5.5,
+          "y": 6.0,
+          "z": 5.5
+        },
+        {
+          "x": 0.0,
+          "y": 6.0,
+          "z": 6.2
+        },
+        {
+          "x": 5.5,
+          "y": 6.0,
+          "z": 5.5
+        },
+        {
+          "x": 7.0,
+          "y": 6.0,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "proscenium",
+      "color_order": "GRB",
+      "tags": [
+        "arch",
+        "stage"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "arch_proscenium_inner",
+      "name": "Grand Proscenium Inner Arch",
+      "pixel_count": 360,
+      "waypoints": [
+        {
+          "x": -5.0,
+          "y": 6.5,
+          "z": 0.0
+        },
+        {
+          "x": -3.5,
+          "y": 6.5,
+          "z": 4.5
+        },
+        {
+          "x": 0.0,
+          "y": 6.5,
+          "z": 5.0
+        },
+        {
+          "x": 3.5,
+          "y": 6.5,
+          "z": 4.5
+        },
+        {
+          "x": 5.0,
+          "y": 6.5,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "proscenium",
+      "color_order": "GRB",
+      "tags": [
+        "arch",
+        "stage"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "arch_wing_left",
+      "name": "Stage Left Truss Wing Header",
+      "pixel_count": 200,
+      "waypoints": [
+        {
+          "x": -7.0,
+          "y": 6.0,
+          "z": 0.0
+        },
+        {
+          "x": -9.0,
+          "y": 4.5,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "proscenium",
+      "color_order": "GRB",
+      "tags": [
+        "stage",
+        "wing"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "arch_wing_right",
+      "name": "Stage Right Truss Wing Header",
+      "pixel_count": 200,
+      "waypoints": [
+        {
+          "x": 7.0,
+          "y": 6.0,
+          "z": 0.0
+        },
+        {
+          "x": 9.0,
+          "y": 4.5,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "proscenium",
+      "color_order": "GRB",
+      "tags": [
+        "stage",
+        "wing"
+      ]
+    },
+    {
+      "type": "bulb_string",
+      "id": "festoon_swoop_1",
+      "name": "Amphitheater Festoon Swag 1",
+      "pixel_count": 48,
+      "start": {
+        "x": -6.0,
+        "y": 5.5,
+        "z": 5.0
+      },
+      "end": {
+        "x": -6.5,
+        "y": -4.0,
+        "z": 3.2
+      },
+      "sag": 0.85,
+      "sag_axis": "z",
+      "group": "canopy",
+      "color_order": "RGB",
+      "tags": [
+        "canopy",
+        "festoon"
+      ]
+    },
+    {
+      "type": "bulb_string",
+      "id": "festoon_swoop_2",
+      "name": "Amphitheater Festoon Swag 2",
+      "pixel_count": 48,
+      "start": {
+        "x": -3.5,
+        "y": 5.8,
+        "z": 5.4
+      },
+      "end": {
+        "x": -3.0,
+        "y": -4.5,
+        "z": 3.2
+      },
+      "sag": 0.85,
+      "sag_axis": "z",
+      "group": "canopy",
+      "color_order": "RGB",
+      "tags": [
+        "canopy",
+        "festoon"
+      ]
+    },
+    {
+      "type": "bulb_string",
+      "id": "festoon_swoop_3",
+      "name": "Amphitheater Festoon Swag 3 (Center L)",
+      "pixel_count": 54,
+      "start": {
+        "x": -1.0,
+        "y": 6.0,
+        "z": 5.6
+      },
+      "end": {
+        "x": 0.0,
+        "y": -5.0,
+        "z": 3.2
+      },
+      "sag": 0.85,
+      "sag_axis": "z",
+      "group": "canopy",
+      "color_order": "RGB",
+      "tags": [
+        "canopy",
+        "festoon"
+      ]
+    },
+    {
+      "type": "bulb_string",
+      "id": "festoon_swoop_4",
+      "name": "Amphitheater Festoon Swag 4 (Center R)",
+      "pixel_count": 54,
+      "start": {
+        "x": 1.0,
+        "y": 6.0,
+        "z": 5.6
+      },
+      "end": {
+        "x": 0.0,
+        "y": -5.0,
+        "z": 3.2
+      },
+      "sag": 0.85,
+      "sag_axis": "z",
+      "group": "canopy",
+      "color_order": "RGB",
+      "tags": [
+        "canopy",
+        "festoon"
+      ]
+    },
+    {
+      "type": "bulb_string",
+      "id": "festoon_swoop_5",
+      "name": "Amphitheater Festoon Swag 5",
+      "pixel_count": 48,
+      "start": {
+        "x": 3.5,
+        "y": 5.8,
+        "z": 5.4
+      },
+      "end": {
+        "x": 3.0,
+        "y": -4.5,
+        "z": 3.2
+      },
+      "sag": 0.85,
+      "sag_axis": "z",
+      "group": "canopy",
+      "color_order": "RGB",
+      "tags": [
+        "canopy",
+        "festoon"
+      ]
+    },
+    {
+      "type": "bulb_string",
+      "id": "festoon_swoop_6",
+      "name": "Amphitheater Festoon Swag 6",
+      "pixel_count": 48,
+      "start": {
+        "x": 6.0,
+        "y": 5.5,
+        "z": 5.0
+      },
+      "end": {
+        "x": 6.5,
+        "y": -4.0,
+        "z": 3.2
+      },
+      "sag": 0.85,
+      "sag_axis": "z",
+      "group": "canopy",
+      "color_order": "RGB",
+      "tags": [
+        "canopy",
+        "festoon"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "catwalk_runway",
+      "name": "Center Catwalk Runway Strip",
+      "pixel_count": 250,
+      "waypoints": [
+        {
+          "x": 0.0,
+          "y": 5.5,
+          "z": 0.4
+        },
+        {
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.4
+        }
+      ],
+      "reversed": false,
+      "group": "stage_deck",
+      "color_order": "GRB",
+      "tags": [
+        "catwalk",
+        "runway"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "stage_deck_lip",
+      "name": "Amphitheater Stage Front Lip",
+      "pixel_count": 250,
+      "waypoints": [
+        {
+          "x": -4.5,
+          "y": 5.5,
+          "z": 0.2
+        },
+        {
+          "x": 4.5,
+          "y": 5.5,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "stage_deck",
+      "color_order": "GRB",
+      "tags": [
+        "lip",
+        "stage"
+      ]
+    },
+    {
+      "type": "matrix",
+      "id": "matrix_imag_left",
+      "name": "Left IMAG Video Wall (16x16)",
+      "rows": 16,
+      "cols": 16,
+      "origin": {
+        "x": -8.0,
+        "y": 5.5,
+        "z": 1.8
+      },
+      "width": 2.4,
+      "height": 2.4,
+      "serpentine": true,
+      "vertical": false,
+      "start_corner": "top_left",
+      "group": "imag_screens",
+      "color_order": "GRB",
+      "tags": [
+        "imag",
+        "left",
+        "matrix"
+      ]
+    },
+    {
+      "type": "matrix",
+      "id": "matrix_imag_right",
+      "name": "Right IMAG Video Wall (16x16)",
+      "rows": 16,
+      "cols": 16,
+      "origin": {
+        "x": 5.6,
+        "y": 5.5,
+        "z": 1.8
+      },
+      "width": 2.4,
+      "height": 2.4,
+      "serpentine": true,
+      "vertical": false,
+      "start_corner": "top_left",
+      "group": "imag_screens",
+      "color_order": "GRB",
+      "tags": [
+        "imag",
+        "matrix",
+        "right"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "delay_tower_fl",
+      "name": "Delay Tower 1 (Front Left)",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": -5.0,
+          "y": -0.5,
+          "z": 4.0
+        },
+        {
+          "x": -5.0,
+          "y": -0.5,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "delay_towers",
+      "color_order": "GRB",
+      "tags": [
+        "delay",
+        "tower"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "delay_tower_fr",
+      "name": "Delay Tower 2 (Front Right)",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": 5.0,
+          "y": -0.5,
+          "z": 4.0
+        },
+        {
+          "x": 5.0,
+          "y": -0.5,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "delay_towers",
+      "color_order": "GRB",
+      "tags": [
+        "delay",
+        "tower"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "delay_tower_rl",
+      "name": "Delay Tower 3 (Rear Left)",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": -6.0,
+          "y": -5.5,
+          "z": 4.0
+        },
+        {
+          "x": -6.0,
+          "y": -5.5,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "delay_towers",
+      "color_order": "GRB",
+      "tags": [
+        "delay",
+        "tower"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "delay_tower_rr",
+      "name": "Delay Tower 4 (Rear Right)",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": 6.0,
+          "y": -5.5,
+          "z": 4.0
+        },
+        {
+          "x": 6.0,
+          "y": -5.5,
+          "z": 0.0
+        }
+      ],
+      "reversed": false,
+      "group": "delay_towers",
+      "color_order": "GRB",
+      "tags": [
+        "delay",
+        "tower"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "strip_foh_booth",
+      "name": "FOH Mixing Booth Surround",
+      "pixel_count": 200,
+      "waypoints": [
+        {
+          "x": -2.0,
+          "y": -6.5,
+          "z": 1.0
+        },
+        {
+          "x": 2.0,
+          "y": -6.5,
+          "z": 1.0
+        },
+        {
+          "x": 2.0,
+          "y": -7.5,
+          "z": 1.0
+        },
+        {
+          "x": -2.0,
+          "y": -7.5,
+          "z": 1.0
+        },
+        {
+          "x": -2.0,
+          "y": -6.5,
+          "z": 1.0
+        }
+      ],
+      "reversed": false,
+      "group": "foh_booth",
+      "color_order": "GRB",
+      "tags": [
+        "booth",
+        "foh"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "strip_vip_lounge_l",
+      "name": "VIP Garden Left Boundary Strip",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": -8.5,
+          "y": 2.0,
+          "z": 0.1
+        },
+        {
+          "x": -8.5,
+          "y": -4.0,
+          "z": 0.1
+        }
+      ],
+      "reversed": false,
+      "group": "vip_garden",
+      "color_order": "GRB",
+      "tags": [
+        "garden",
+        "vip"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "strip_vip_lounge_r",
+      "name": "VIP Garden Right Boundary Strip",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": 8.5,
+          "y": 2.0,
+          "z": 0.1
+        },
+        {
+          "x": 8.5,
+          "y": -4.0,
+          "z": 0.1
+        }
+      ],
+      "reversed": false,
+      "group": "vip_garden",
+      "color_order": "GRB",
+      "tags": [
+        "garden",
+        "vip"
+      ]
+    },
+    {
+      "type": "point",
+      "id": "lamp_vip_accent_1",
+      "name": "VIP Garden North Lamp",
+      "location": {
+        "x": -8.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "pixel_count": 1,
+      "radius": 0.6,
+      "group": "vip_garden",
+      "color_order": "GRB",
+      "tags": []
+    },
+    {
+      "type": "point",
+      "id": "lamp_vip_accent_2",
+      "name": "VIP Garden South Lamp",
+      "location": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "pixel_count": 1,
+      "radius": 0.6,
+      "group": "vip_garden",
+      "color_order": "GRB",
+      "tags": []
+    },
+    {
+      "type": "projector",
+      "id": "projector_stage_backdrop",
+      "name": "Festival Main Backdrop Screen",
+      "top_left": {
+        "x": -4.0,
+        "y": 7.2,
+        "z": 5.0
+      },
+      "bottom_right": {
+        "x": 4.0,
+        "y": 7.2,
+        "z": 1.2
+      },
+      "resolution_x": 1920,
+      "resolution_y": 1080,
+      "group": "projectors",
+      "tags": []
+    }
+  ]
+}

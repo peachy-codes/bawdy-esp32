@@ -30,6 +30,16 @@ public class SpatialStageView extends JPanel {
     private SpatialUniverseModel universe;
     private PatchTableModel patchTable;
 
+    // Stage Preset Selector
+    private final JComboBox<String> cmbStagePreset = new JComboBox<>(new String[]{
+            "Metro Concert Hall & Lounge",
+            "Warehouse Rave & Boiler Stage",
+            "Outdoor Amphitheater & Lawn",
+            "Immersive Art Gallery & Studio"
+    });
+    private java.util.function.Consumer<String> onStagePresetSelectedListener;
+    private boolean suppressPresetEvent = false;
+
     // Simulation selector promoted to field for programmatic synchronization
     private final JComboBox<String> cmbSimMode = new JComboBox<>(new String[]{
             "Timeline Cues (Player)",
@@ -115,6 +125,29 @@ public class SpatialStageView extends JPanel {
         cmbSimMode.setSelectedIndex(5);
     }
 
+    public void setOnStagePresetSelectedListener(java.util.function.Consumer<String> listener) {
+        this.onStagePresetSelectedListener = listener;
+    }
+
+    public void setStagePresetSelection(String name) {
+        if (name == null) return;
+        suppressPresetEvent = true;
+        try {
+            String lower = name.toLowerCase();
+            if (lower.contains("warehouse") || lower.contains("rave") || lower.contains("boiler")) {
+                cmbStagePreset.setSelectedIndex(1);
+            } else if (lower.contains("amphitheater") || lower.contains("festival") || lower.contains("outdoor")) {
+                cmbStagePreset.setSelectedIndex(2);
+            } else if (lower.contains("gallery") || lower.contains("art") || lower.contains("studio")) {
+                cmbStagePreset.setSelectedIndex(3);
+            } else {
+                cmbStagePreset.setSelectedIndex(0);
+            }
+        } finally {
+            suppressPresetEvent = false;
+        }
+    }
+
     public void resetTimeline() {
         canvasPanel.resetTimeline();
         cmbSimMode.setSelectedIndex(0);
@@ -124,6 +157,26 @@ public class SpatialStageView extends JPanel {
         JToolBar tb = new JToolBar();
         tb.setFloatable(false);
         tb.setBorder(BorderFactory.createEtchedBorder());
+
+        // Stage Preset selector
+        JLabel lblStage = new JLabel("Stage Preset: ");
+        lblStage.setFont(new Font("Arial", Font.BOLD, 12));
+        tb.add(lblStage);
+
+        cmbStagePreset.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbStagePreset.addActionListener(e -> {
+            if (suppressPresetEvent || onStagePresetSelectedListener == null) return;
+            String presetId = switch (cmbStagePreset.getSelectedIndex()) {
+                case 1 -> "warehouse_rave";
+                case 2 -> "festival_amphitheater";
+                case 3 -> "art_gallery";
+                default -> "concert_hall";
+            };
+            onStagePresetSelectedListener.accept(presetId);
+        });
+        tb.add(cmbStagePreset);
+
+        tb.addSeparator(new Dimension(14, 24));
 
         // Camera presets
         JButton btnFit = new JButton("Fit Stage");

@@ -1,0 +1,613 @@
+{
+  "name": "Immersive Art Gallery & Studio",
+  "bounding_box": {
+    "min_x": -4.8,
+    "min_y": -4.6,
+    "min_z": 0.0,
+    "max_x": 4.8,
+    "max_y": 4.9,
+    "max_z": 3.8,
+    "width": 9.6,
+    "height": 9.5,
+    "depth": 3.8
+  },
+  "total_pixels": 2821,
+  "fixtures": [
+    {
+      "type": "linear_strip",
+      "id": "halo_hex_outer",
+      "name": "Outer Hexagonal Ceiling Halo",
+      "pixel_count": 300,
+      "waypoints": [
+        {
+          "x": 3.5,
+          "y": 0.0,
+          "z": 3.6
+        },
+        {
+          "x": 1.75,
+          "y": 3.0311,
+          "z": 3.6
+        },
+        {
+          "x": -1.75,
+          "y": 3.0311,
+          "z": 3.6
+        },
+        {
+          "x": -3.5,
+          "y": 0.0,
+          "z": 3.6
+        },
+        {
+          "x": -1.75,
+          "y": -3.0311,
+          "z": 3.6
+        },
+        {
+          "x": 1.75,
+          "y": -3.0311,
+          "z": 3.6
+        },
+        {
+          "x": 3.5,
+          "y": -0.0,
+          "z": 3.6
+        }
+      ],
+      "reversed": false,
+      "group": "ceiling_halos",
+      "color_order": "GRB",
+      "tags": [
+        "halo",
+        "hex",
+        "outer"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "halo_hex_mid",
+      "name": "Mid Hexagonal Ceiling Halo",
+      "pixel_count": 240,
+      "waypoints": [
+        {
+          "x": 2.5,
+          "y": 0.0,
+          "z": 3.7
+        },
+        {
+          "x": 1.25,
+          "y": 2.1651,
+          "z": 3.7
+        },
+        {
+          "x": -1.25,
+          "y": 2.1651,
+          "z": 3.7
+        },
+        {
+          "x": -2.5,
+          "y": 0.0,
+          "z": 3.7
+        },
+        {
+          "x": -1.25,
+          "y": -2.1651,
+          "z": 3.7
+        },
+        {
+          "x": 1.25,
+          "y": -2.1651,
+          "z": 3.7
+        },
+        {
+          "x": 2.5,
+          "y": -0.0,
+          "z": 3.7
+        }
+      ],
+      "reversed": false,
+      "group": "ceiling_halos",
+      "color_order": "GRB",
+      "tags": [
+        "halo",
+        "hex",
+        "mid"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "halo_hex_inner",
+      "name": "Inner Hexagonal Ceiling Halo",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": 1.5,
+          "y": 0.0,
+          "z": 3.8
+        },
+        {
+          "x": 0.75,
+          "y": 1.299,
+          "z": 3.8
+        },
+        {
+          "x": -0.75,
+          "y": 1.299,
+          "z": 3.8
+        },
+        {
+          "x": -1.5,
+          "y": 0.0,
+          "z": 3.8
+        },
+        {
+          "x": -0.75,
+          "y": -1.299,
+          "z": 3.8
+        },
+        {
+          "x": 0.75,
+          "y": -1.299,
+          "z": 3.8
+        },
+        {
+          "x": 1.5,
+          "y": -0.0,
+          "z": 3.8
+        }
+      ],
+      "reversed": false,
+      "group": "ceiling_halos",
+      "color_order": "GRB",
+      "tags": [
+        "halo",
+        "hex",
+        "inner"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_l1",
+      "name": "West Wall Light Blade 1",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": -4.8,
+          "y": 3.0,
+          "z": 3.2
+        },
+        {
+          "x": -4.8,
+          "y": 3.0,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_l2",
+      "name": "West Wall Light Blade 2",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": -4.8,
+          "y": 0.0,
+          "z": 3.2
+        },
+        {
+          "x": -4.8,
+          "y": 0.0,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_l3",
+      "name": "West Wall Light Blade 3",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": -4.8,
+          "y": -3.0,
+          "z": 3.2
+        },
+        {
+          "x": -4.8,
+          "y": -3.0,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_r1",
+      "name": "East Wall Light Blade 1",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": 4.8,
+          "y": 3.0,
+          "z": 3.2
+        },
+        {
+          "x": 4.8,
+          "y": 3.0,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_r2",
+      "name": "East Wall Light Blade 2",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": 4.8,
+          "y": 0.0,
+          "z": 3.2
+        },
+        {
+          "x": 4.8,
+          "y": 0.0,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_r3",
+      "name": "East Wall Light Blade 3",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": 4.8,
+          "y": -3.0,
+          "z": 3.2
+        },
+        {
+          "x": 4.8,
+          "y": -3.0,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_n1",
+      "name": "North Wall Light Blade L",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": -2.5,
+          "y": 4.8,
+          "z": 3.2
+        },
+        {
+          "x": -2.5,
+          "y": 4.8,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "blade_wall_n2",
+      "name": "North Wall Light Blade R",
+      "pixel_count": 120,
+      "waypoints": [
+        {
+          "x": 2.5,
+          "y": 4.8,
+          "z": 3.2
+        },
+        {
+          "x": 2.5,
+          "y": 4.8,
+          "z": 0.2
+        }
+      ],
+      "reversed": false,
+      "group": "wall_blades",
+      "color_order": "GRB",
+      "tags": [
+        "blade",
+        "wall"
+      ]
+    },
+    {
+      "type": "matrix",
+      "id": "matrix_pedestal_top",
+      "name": "Sculpture Pedestal Matrix Top (16x16)",
+      "rows": 16,
+      "cols": 16,
+      "origin": {
+        "x": -0.6,
+        "y": 0.6,
+        "z": 0.9
+      },
+      "width": 1.2,
+      "height": 1.2,
+      "serpentine": true,
+      "vertical": false,
+      "start_corner": "top_left",
+      "group": "sculpture",
+      "color_order": "GRB",
+      "tags": [
+        "center",
+        "matrix",
+        "pedestal"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "strip_pedestal_base",
+      "name": "Sculpture Pedestal Base Glow",
+      "pixel_count": 160,
+      "waypoints": [
+        {
+          "x": -0.8,
+          "y": -0.8,
+          "z": 0.05
+        },
+        {
+          "x": 0.8,
+          "y": -0.8,
+          "z": 0.05
+        },
+        {
+          "x": 0.8,
+          "y": 0.8,
+          "z": 0.05
+        },
+        {
+          "x": -0.8,
+          "y": 0.8,
+          "z": 0.05
+        },
+        {
+          "x": -0.8,
+          "y": -0.8,
+          "z": 0.05
+        }
+      ],
+      "reversed": false,
+      "group": "sculpture",
+      "color_order": "GRB",
+      "tags": [
+        "base",
+        "pedestal"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "runner_floor_north",
+      "name": "North Floor Track Runner",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": -4.2,
+          "y": 4.5,
+          "z": 0.02
+        },
+        {
+          "x": 4.2,
+          "y": 4.5,
+          "z": 0.02
+        }
+      ],
+      "reversed": false,
+      "group": "floor_tracks",
+      "color_order": "GRB",
+      "tags": [
+        "floor",
+        "runner"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "runner_floor_south",
+      "name": "South Floor Track Runner",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": -4.2,
+          "y": -4.5,
+          "z": 0.02
+        },
+        {
+          "x": 4.2,
+          "y": -4.5,
+          "z": 0.02
+        }
+      ],
+      "reversed": false,
+      "group": "floor_tracks",
+      "color_order": "GRB",
+      "tags": [
+        "floor",
+        "runner"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "runner_floor_west",
+      "name": "West Floor Track Runner",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": -4.5,
+          "y": -4.2,
+          "z": 0.02
+        },
+        {
+          "x": -4.5,
+          "y": 4.2,
+          "z": 0.02
+        }
+      ],
+      "reversed": false,
+      "group": "floor_tracks",
+      "color_order": "GRB",
+      "tags": [
+        "floor",
+        "runner"
+      ]
+    },
+    {
+      "type": "linear_strip",
+      "id": "runner_floor_east",
+      "name": "East Floor Track Runner",
+      "pixel_count": 180,
+      "waypoints": [
+        {
+          "x": 4.5,
+          "y": -4.2,
+          "z": 0.02
+        },
+        {
+          "x": 4.5,
+          "y": 4.2,
+          "z": 0.02
+        }
+      ],
+      "reversed": false,
+      "group": "floor_tracks",
+      "color_order": "GRB",
+      "tags": [
+        "floor",
+        "runner"
+      ]
+    },
+    {
+      "type": "point",
+      "id": "spot_entry_l",
+      "name": "Gallery Entry Left Spot",
+      "location": {
+        "x": -2.0,
+        "y": -4.6,
+        "z": 0.0
+      },
+      "pixel_count": 1,
+      "radius": 0.35,
+      "group": "museum_spots",
+      "color_order": "GRB",
+      "tags": []
+    },
+    {
+      "type": "point",
+      "id": "spot_entry_r",
+      "name": "Gallery Entry Right Spot",
+      "location": {
+        "x": 2.0,
+        "y": -4.6,
+        "z": 0.0
+      },
+      "pixel_count": 1,
+      "radius": 0.35,
+      "group": "museum_spots",
+      "color_order": "GRB",
+      "tags": []
+    },
+    {
+      "type": "point",
+      "id": "spot_sculpture_overhead",
+      "name": "Sculpture Overhead Spot",
+      "location": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.8
+      },
+      "pixel_count": 1,
+      "radius": 0.5,
+      "group": "museum_spots",
+      "color_order": "GRB",
+      "tags": []
+    },
+    {
+      "type": "point",
+      "id": "spot_north_wall",
+      "name": "North Wall Artwork Spot",
+      "location": {
+        "x": 0.0,
+        "y": 4.6,
+        "z": 0.0
+      },
+      "pixel_count": 1,
+      "radius": 0.35,
+      "group": "museum_spots",
+      "color_order": "GRB",
+      "tags": []
+    },
+    {
+      "type": "projector",
+      "id": "projector_gallery_canvas",
+      "name": "Digital Canvas Projection Viewport",
+      "top_left": {
+        "x": -2.0,
+        "y": 4.9,
+        "z": 3.2
+      },
+      "bottom_right": {
+        "x": 2.0,
+        "y": 4.9,
+        "z": 0.8
+      },
+      "resolution_x": 1920,
+      "resolution_y": 1080,
+      "group": "projectors",
+      "tags": []
+    }
+  ]
+}
