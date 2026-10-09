@@ -1,8 +1,6 @@
-"""Animation Runner engine coordinating pattern generation, UDP transmission, and frame callbacks."""
+"""Animation Runner adapter coordinating pattern generation, UDP transmission, and frame callbacks via LightingEngine."""
 
 from __future__ import annotations
-import threading
-import time
 from typing import Callable
 
 from wled_app.domain.device import DeviceConfig
@@ -11,10 +9,16 @@ from wled_app.network.udp_client import MockUdpClient, UdpClient, UdpSender
 from wled_app.patterns.base import Pattern, PatternConfig
 from wled_app.protocols.base import ProtocolEmitter
 from wled_app.protocols.registry import get_emitter
+from wled_engine.blend import BlendMode
+from wled_engine.core import LightingEngine
 
 
 class AnimationRunner:
-    """Coordinates real-time rendering, packet encoding, and UDP transmission."""
+    """CLI/TUI Adapter over the headless LightingEngine.
+
+    Coordinates real-time rendering, multi-layer compositing, and UDP transmission
+    while maintaining 100% backward-compatible API with existing CLI & TUI consumers.
+    """
 
     def __init__(
         self,
@@ -42,97 +46,85 @@ class AnimationRunner:
             self.sender = MockUdpClient() if dry_run else UdpClient()
             self._owns_sender = True
 
-        self.frame = FrameBuffer(device.total_leds)
-        self._tick = 0
-        self._stop_event = threading.Event()
-        self._thread: threading.Thread | None = None
-        self._actual_fps: float = target_fps
+        # Initialize underlying headless LightingEngine
+        self.engine = LightingEngine(
+            target_fps=self.target_fps,
+            dry_run=dry_run,
+        )
+
+        # Register device with engine fleet
+        self.node = self.engine.add_device(
+            device=self.device,
+            emitter=self.emitter,
+            sender=self.sender,
+        )
+
+        # Set Layer 0 as the active primary pattern
+        self.engine.set_layer_pattern(
+            0,
+            pattern=self.pattern,
+            pattern_config=self.pattern_config,
+            opacity=1.0,
+            blend_mode=BlendMode.OVERWRITE,
+        )
+
+        # Reference to the composited frame buffer for backward compatibility
+        self.frame = self.node.frame
 
     @property
     def is_running(self) -> bool:
-        return not self._stop_event.is_set() and (
-            self._thread is not None and self._thread.is_alive()
-        )
+        return self.engine.is_running
 
     @property
     def current_tick(self) -> int:
-        return self._tick
+        return self.engine.current_tick
 
     @property
     def actual_fps(self) -> float:
-        return self._actual_fps
+        return self.engine.actual_fps
 
     def step(self, tick: int | None = None) -> FrameBuffer:
-        """Execute a single animation frame."""
-        current_tick = self._tick if tick is None else tick
-        self.pattern.render(current_tick, self.device, self.frame, self.pattern_config)
-
-        # Transmit UDP packets only if total_leds > 0
-        if self.device.total_leds > 0:
-            packets = self.emitter.encode_frame(self.frame)
-            self.sender.send_packets(self.device.ip, self.device.port, packets)
+        """Execute a single animation frame via the LightingEngine."""
+        current_tick = self.engine.current_tick if tick is None else tick
+        self.engine.step(
+            custom_dt=1.0 / self.target_fps if tick is not None else None,
+            tick=tick,
+        )
 
         if self.on_frame:
-            self.on_frame(self.frame, self._actual_fps, current_tick)
-
-        if tick is None:
-            self._tick += 1
+            self.on_frame(self.frame, self.actual_fps, current_tick)
 
         return self.frame
 
     def run(self, max_frames: int | None = None) -> None:
         """Run the animation loop synchronously until stopped or max_frames reached."""
-        self._stop_event.clear()
-        frame_interval = 1.0 / self.target_fps
-        frame_count = 0
-        last_time = time.perf_counter()
-        fps_timer = last_time
-        fps_counter = 0
+        if self.on_frame:
+            def _engine_on_frame(dev: DeviceConfig, fb: FrameBuffer, fps: float, tick: int) -> None:
+                if self.on_frame:
+                    self.on_frame(fb, fps, tick)
+            self.engine.on_frame = _engine_on_frame
 
         try:
-            while not self._stop_event.is_set():
-                if max_frames is not None and frame_count >= max_frames:
-                    break
-
-                loop_start = time.perf_counter()
-                self.step()
-                frame_count += 1
-                fps_counter += 1
-
-                # Calculate actual FPS every second
-                now = time.perf_counter()
-                elapsed_fps = now - fps_timer
-                if elapsed_fps >= 0.5:
-                    self._actual_fps = fps_counter / elapsed_fps
-                    fps_counter = 0
-                    fps_timer = now
-
-                # Sleep to maintain target FPS
-                compute_time = now - loop_start
-                sleep_time = frame_interval - compute_time
-                if sleep_time > 0:
-                    time.sleep(sleep_time)
-
+            self.engine.run(max_frames=max_frames)
         finally:
             self.close()
 
     def start_background(self) -> None:
         """Start animation loop in a background daemon thread."""
-        if self.is_running:
-            return
-        self._stop_event.clear()
-        self._thread = threading.Thread(target=self.run, daemon=True)
-        self._thread.start()
+        if self.on_frame:
+            def _engine_on_frame(dev: DeviceConfig, fb: FrameBuffer, fps: float, tick: int) -> None:
+                if self.on_frame:
+                    self.on_frame(fb, fps, tick)
+            self.engine.on_frame = _engine_on_frame
+        self.engine.start()
 
     def stop(self, timeout: float = 2.0) -> None:
         """Signal the animation loop to stop and wait for completion."""
-        self._stop_event.set()
-        if self._thread and self._thread.is_alive():
-            self._thread.join(timeout=timeout)
-        self._thread = None
+        self.engine.stop(timeout=timeout)
         self.close()
 
     def close(self) -> None:
         """Clean up resources."""
+        self.engine.close()
         if self._owns_sender:
             self.sender.close()

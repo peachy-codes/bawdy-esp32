@@ -1,173 +1,321 @@
-# ASCII UDP WLED Controller
+# WLED Multi-Node Lighting Architecture & Sequencer Studio
 
-A modular, extensible terminal application for configuring multi-channel addressable LED controllers (specifically the **Athom Ethernet WLED ESP32 DMX Controller**) and streaming real-time lighting patterns with live ASCII channel monitoring over UDP.
+An enterprise-grade, modular lighting choreography platform designed for real-world multi-controller venue installations (20+ hardwired Cat6 WLED ESP32 boards, overhead festoon strings, matrix panels, floor lamps, and stage trusses) as well as single-strip setups.
+
+The platform provides a **3-tier layered architecture**: a high-throughput **virtual hardware digital twin simulator**, a **headless 10-layer compositing engine and REST daemon**, and a native **Java 17 Swing desktop sequencer studio** with concurrent timeline cue scheduling, 2D spatial venue visualization, and hardware patch editing.
 
 ---
 
-## 🌟 Key Features
+## 🏗️ System Architecture & Layered Design
 
-* **Multi-Channel Hardware Alignment:** Specifically pre-configured for the 4-channel output topology of the Athom Ethernet ESP32 controller, with support for arbitrary numbers of addressable channels.
-* **Automatic Address Space Layout:** Automatically calculates contiguous linear start offsets for all configured outputs (`CH1`..`CH4`) to match WLED internal memory mapping.
-* **WLED Realtime Protocols:**
-  * **DDP (Distributed Display Protocol, Port 4048):** Industry standard high-performance protocol recommended for multi-strip WLED setups.
-  * **DRGB (Direct RGB, Port 21324):** High-speed raw RGB streaming.
-  * **DNRGB (Direct Numbered RGB, Port 21324):** Large-frame streaming with start offset headers.
-  * **WARLS (WLED Audio Reactive LED Strip, Port 21324):** Per-pixel indexed RGB addressing.
-* **Live ASCII Channel Visualizer:** Renders real-time strip activity channel-by-channel directly in your terminal using 24-bit Truecolor ANSI blocks (`██`), peak-preserving perceptual brightness, and active channel color swatches (`●`).
-* **11 Dynamic Patterns & Color Palettes:**
-  1. **Flowing Rainbow:** Smooth continuous HSV color spectrum wave.
-  2. **Theater Chase:** High-speed scanner dot with glowing, fading tail.
-  3. **Fire & Campfire:** Heat simulation with rising flames and random spark embers.
-  4. **Meteor Rain:** Fast shooting star head with decaying sparkling tail.
-  5. **Cylon (Knight Rider):** Smooth bouncing scanner eye with glowing tail.
-  6. **Twinkle Stars:** Softly breathing and sparkling stars on a dark backdrop.
-  7. **Ocean Waves:** Dual harmonic undulating sine ripples simulating water.
-  8. **Gradient Drift:** Multi-stop gradient palettes drifting across channels.
-  9. **Blink & Pulse:** Multi-channel strobe, breathing sine pulse, and alternating channel flash.
-  10. **Color Wipe:** Progressive filling and draining of LED strips.
-  11. **Solid Wash & Breathe:** Clean solid color wash with optional breathing pulse.
-* **Predefined Palettes:** *Cyberpunk Neon*, *Tropical Sunset*, *Deep Ocean*, *Emerald Forest*, *Fire & Flame*, *Police Strobe*, and *Party Confetti*.
-* **Persistence & Presets:** Save and load device configurations and pattern parameter presets as human-readable JSON files.
-* **Dry-Run / Preview Mode:** Test and visually inspect patterns directly in your terminal without needing physical hardware connected.
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                   TIER 3: DESKTOP SEQUENCER STUDIO [Java 17 Swing]               │
+│                                                                                  │
+│   ┌────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────┐   │
+│   │  Timeline & Cue Editor │  │  Spatial Stage Universe  │  │ Controller Fleet│   │
+│   │  • Layers 0..9 Cues    │  │  • 2D CAD Venue Canvas   │  │   & Patch Table │   │
+│   │  • Concurrent Timing   │  │  • Fixture Hierarchy     │  │  • 20 Cat6 Nodes│   │
+│   │  • Time Dilation Scrubber││  • 3D Coordinates / Waypoints│ • 31 Segments   │   │
+│   └───────────┬────────────┘  └────────────┬────────────┘  └────────┬────────┘   │
+└───────────────┼────────────────────────────┼────────────────────────┼────────────┘
+                │ HTTP REST API (:8765)      │ Local Preview          │ Patch Sync
+┌───────────────▼────────────────────────────▼────────────────────────▼────────────┐
+│                  TIER 2: HEADLESS LIGHTING ENGINE & DAEMON [Python]              │
+│                                                                                  │
+│   ┌──────────────────────────────────────────────────────────────────────────┐   │
+│   │  10-Layer Compositor (Layers 0..9) & Mathematical Blend Modes            │   │
+│   │  (Overwrite, Alpha Blend, Additive, Multiply, Max, Mask)                 │   │
+│   ├──────────────────────────────────────────────────────────────────────────┤   │
+│   │  Continuous 3D Spatial Field Sampler (Point3D -> Fixtures -> Patch)      │   │
+│   ├──────────────────────────────────────────────────────────────────────────┤   │
+│   │  MultiNodeDispatcher: Zero-Allocation UDP / DDP Buffer Packing           │   │
+│   │  Cat6 Broadcast Frame Sync (0x41) Clock Latching                         │   │
+│   └────────────────────────────────────┬─────────────────────────────────────┘   │
+└────────────────────────────────────────┼─────────────────────────────────────────┘
+                                         │ UDP / DDP (Ports 4048..4067)
+┌────────────────────────────────────────▼─────────────────────────────────────────┐
+│               TIER 1: HARDWARE & DIGITAL TWIN SIMULATOR LAYER                    │
+│                                                                                  │
+│   ┌────────────────────────────────────────┐  ┌──────────────────────────────┐   │
+│   │  20 Virtual WLED ESP32 Controllers     │  │  HTML5 / Canvas Visualizer   │   │
+│   │  • Independent UDP Sockets (4048..4067)│  │  • http://localhost:8080    │   │
+│   │  • State Machine & Stream Integrity HUD│  │  • Real-Time Spatial Venue   │   │
+│   └───────────────────┬────────────────────┘  └──────────────▲───────────────┘   │
+│                       └───────────── WebSocket ──────────────┘                   │
+│                                                                                  │
+│   (OR Physical Cat6 Network: 20x Athom / ESP32 WLED Hardware Boards)             │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### How the Layers Interact
+
+1. **Tier 1 — Hardware & Digital Twin Simulation (`wled_simulator`):**
+   - In simulation mode, runs 20 virtual WLED ESP32 controllers on individual UDP ports (`4048` through `4067`).
+   - Processes realtime lighting protocols (**DDP**, **DRGB**, **DNRGB**, **WARLS**) through real operating system sockets.
+   - Listens for the DDP `0x41` Broadcast Frame Synchronization packet on `255.255.255.255:4048` to latch all 20 boards simultaneously without inter-controller frame tearing.
+   - Streams aggregated fixture state over WebSockets to an interactive CAD web visualizer at `http://localhost:8080`.
+   - In real-world production, this layer is replaced with physical ESP32 boards wired via Cat6 cables to an Ethernet switch.
+
+2. **Tier 2 — Headless Lighting Engine Daemon (`wled_engine`):**
+   - Operates a deterministic 30 FPS monotonic frame clock loop (`FrameClock`).
+   - Manages **10 independent compositing layers** (`Layer 0` to `Layer 9`), calculating non-linear cosine opacity transitions, color blending, and channel masks.
+   - Evaluates continuous 3D mathematical fields (`SpatialSampler`) and maps them to physical fixtures through the [`PatchTable`](data/venue/patch.json).
+   - Serializes contiguous byte buffers for each controller and broadcasts UDP packets via [`MultiNodeDispatcher`](src/wled_engine/fleet/dispatcher.py).
+   - Exposes a complete JSON REST API on port `8765` for real-time remote orchestration.
+
+3. **Tier 3 — Pattern Sequencer Studio (`sequencer-java`):**
+   - Native Java 17 Swing application built for authoring and live execution.
+   - Communicates with the Python engine daemon over HTTP REST.
+   - Provides three specialized workspaces: **Timeline & Cues**, **Spatial Stage Universe**, and **Controller Fleet & Hardware Patch Table**.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Requirements & Installation
+### Requirements
+- **Python 3.10+** (with `rich` and `prompt_toolkit` for the terminal visualizer)
+- **Java 17+** and **Maven** (for the native desktop sequencer)
 
-Python 3.10+ is required. Dependencies are minimal (`rich` and `prompt_toolkit`).
-
-```bash
-# Clone or navigate to the directory
-cd ~/ascii-udp-wled
-
-# Install package in editable development mode
-pip install -e .
-```
-
-### 2. Interactive Terminal UI
-
-Launch the interactive terminal application:
+### 1. Launch the Full Stack (One Command)
+To launch all three layers simultaneously with automatic health monitoring and background process management:
 
 ```bash
-python3 -m wled_app
-# Or via installed console script:
-wled-app
+./run-stack
 ```
 
-The interactive wizard guides you through:
-1. **Selecting / Loading** saved devices.
-2. **Creating a new device** with IP, UDP port, protocol, and channel strip lengths.
-3. **Inspecting channels** and linear address ranges.
-4. **Streaming real-time patterns** with live ASCII art and UDP transmission.
-5. **Managing pattern presets**.
+This starts:
+1. The **20-Node Virtual Hardware Simulator** (Ports `4048..4067`, Web UI at `http://localhost:8080`)
+2. The **Lighting Engine REST Daemon** (HTTP API at `http://127.0.0.1:8765`)
+3. The **Java Sequencer Studio GUI** (Desktop Swing Window)
+
+Pressing <kbd>Ctrl+C</kbd> in your terminal gracefully shuts down all services.
+
+### 2. Launch Individual Services
+Each layer can also be run independently in separate terminal windows:
+
+```bash
+# Terminal 1: 20-Node Hardware Digital Twin Simulator (Web UI: http://localhost:8080)
+python3 sim.py --venue
+
+# Terminal 2: Headless Lighting Engine Daemon (REST API: http://127.0.0.1:8765)
+python3 run.py daemon --venue
+
+# Terminal 3: Java Desktop Sequencer Studio
+./sequencer-gui
+```
 
 ---
 
-## 💻 Command Line Interface (CLI)
+## 🎛️ WLED Pattern Sequencer Studio [Java 17 Swing]
 
-The application also supports fully scriptable non-interactive CLI commands:
+The **Pattern Sequencer** (`sequencer-java/`) is a native desktop editor designed for rock-solid temporal lighting choreography and venue management without browser DOM or CSS limitations.
 
-### Create a Device
-```bash
-wled-app create \
-  --name "Athom-LivingRoom" \
-  --ip 192.168.1.150 \
-  --channels 60 30 144 0 \
-  --protocol ddp \
-  --description "Athom 4-channel ESP32"
+Built with clean, standard Swing components and the **Arial** font throughout (no third-party styling bugs, missing letters, or emoji rendering glitches), it provides three dedicated views:
+
+### 1. Timeline & Cue Editor Workspace
+* **Concurrent Multi-Layer Timeline:** Schedule multiple simultaneous cues across **Layers 0 through 9**. Unlike simple sequential chasers, multiple layers can run concurrently at the exact same moment.
+* **Two-Way Timing Synchronization:** Two-way calculated inputs for Start Time, Duration, and Stop Time (`Stop = Start + Duration`; modifying Stop automatically updates Duration).
+* **Section-Based Show Organization:** Cues are arranged by named musical/lighting sections (`Intro`, `Main Drive`, `Chorus`, `Bridge`, `Outro`).
+* **Dynamic Property Inspector:** Tabbed panel (`General & Layer`, `Pattern & Color`, `Timing & Fade`) with instant two-way synchronization.
+* **Transport Controls & Monospace HUD:** `Play`, `Pause`, `Stop`, `Prev`, `Next`, interactive click-to-seek scrubber bar, and live elapsed digital readout with active cue counter.
+* **Time Dilation (Speed Scaling):** Slider scaling playback from `0.1x` (slow-motion) to `4.0x` (high speed) without altering sequence timing data.
+* **Flexible Looping Modes:** `Loop Infinitely`, `Play N Times`, `Play Once & Hold`, and `Play Once & Blackout`.
+* **Immediate Blackout:** Dedicated **Blackout** button that immediately halts playback, resets the stage view, and flushes an all-black frame across all hardware controllers.
+
+### 2. Spatial Stage Universe Editor
+* **Interactive 2D CAD Stage View:** Real-time top-down canvas showing the entire venue layout:
+  - 4x Stage Trusses (span and uprights)
+  - 2x Perimeter Wall Ambient Strips
+  - 4x Overhead Festoon Bulb Strings with catenary cable sag
+  - 3x 16x16 High-Density Matrix Panels
+  - 2x Architectural Floor Lamps
+  - Stage Projector Screen with projection beam throw cone
+* **Camera Navigation:** Pan (drag background), Zoom (scroll wheel or `+ Zoom` / `- Zoom`), `Fit Stage` auto-frame, and `1:1 Reset`.
+* **Live FX Mode Previews:** Preview effects directly on the canvas (`Timeline Cues`, `45 Deg Angle Sweep`, `Radial Pulse`, `Rainbow Cloud`, `Linear Gradient`, `Blackout All`).
+* **Fixture Hierarchy Tree & Details Inspector:** Browse fixtures grouped by category (`trusses`, `festoon`, `panels`, `lamps`, `perimeter`, `projectors`), with two-way selection linking between tree and canvas.
+* **Full Fixture Editing:**
+  - **Add Fixture:** Create new fixtures with custom ID, Name, Group, Type, Pixel Count, Color Order, and 3D Waypoints (Start & End X, Y, Z).
+  - **Edit Fixture:** Modify physical coordinates or configuration of any existing fixture.
+  - **Delete Fixture:** Remove fixtures with confirmation dialog.
+  - **Save Universe:** Persist all universe modifications directly to [`data/venue/universe.json`](data/venue/universe.json).
+
+### 3. Controller Fleet & Hardware Patch Table Editor
+* **Controller Fleet Management (20 Cat6 Nodes):**
+  - Monitors all hardwired WLED controller nodes, showing Node ID, Role/Name, IP Address, Port, Protocol, Assigned Fixtures, LED Count, Latency, and Sync Status.
+  - **In-place Table Editing:** Directly edit controller Names, IP addresses, and UDP ports in table cells.
+  - **Action Buttons:** **Add Controller**, **Edit Controller**, and **Delete Controller**.
+* **Hardware Patch Table Editor (31 Segments):**
+  - Maps fixture segments to controller channel indices (CH0..CH3), start offsets, pixel counts, and color orders (`GRB`, `RGB`).
+  - **In-place Table Editing:** Double-click cells to modify Fixture ID, Controller Node, Channel, Start Offset, Count, Color Order, and Wiring Direction.
+  - **Action Buttons:** **Add Segment**, **Edit Segment**, and **Delete Segment**.
+  - **Save Patch Table:** Write updates directly to [`data/venue/patch.json`](data/venue/patch.json).
+* **Fleet Network Utilities:**
+  - **Ping Fleet:** Network health sweep verifying controller availability.
+  - **Broadcast Sync (0x41):** Manual trigger emitting the DDP frame sync packet to latch all nodes simultaneously.
+  - **Validate Patch:** Verification tool checking for channel collisions or port overlaps.
+  - **Blackout Fleet:** Broadcasts an all-black frame to all 20 controller nodes.
+
+---
+
+## ⚡ Headless Lighting Engine (`wled_engine`)
+
+The core lighting engine is decoupled from any UI framework, allowing Python scripts, background daemons, Home Assistant bridges, or external controllers to drive multi-layer lighting logic.
+
+### Key Capabilities
+
+* **10 Indexed Compositing Layers (`Layer 0` to `Layer 9`):** Rendered in strict bottom-to-top order.
+* **Mathematical Blend Modes:**
+  * `BlendMode.OVERWRITE`: Direct pixel replacement.
+  * `BlendMode.ALPHA_BLEND`: Standard transparency compositing ($C_{out} = C_{top} \times \alpha + C_{bottom} \times (1 - \alpha)$).
+  * `BlendMode.ADDITIVE`: Additive luminance blending with 255 clamping.
+  * `BlendMode.MULTIPLY`: Shading, darkener, and vignette masking.
+  * `BlendMode.MAX`: Peak component selector.
+  * `BlendMode.MASK`: Luminance-based alpha masking.
+* **Smooth Cosine Opacity Tweens:** Non-linear ease-in-out curves for smooth fade-ins, fade-outs, and crossfades.
+* **Continuous 3D Spatial Field Sampling:** Evaluates functions in 3D Cartesian space (`f(Point3D) -> Color`) and samples exact coordinates for each fixture.
+* **Atomic Blackout & Flush:** Atomically clears active patterns, resets layers, and transmits an all-black frame to all controllers with frame sync.
+
+### Python API Example
+
+```python
+from wled_engine import LightingEngine, BlendMode
+from wled_engine.spatial.venue import create_demo_venue
+from wled_engine.spatial.patterns import spatial_radial_pulse
+from wled_engine.spatial.coordinates import Point3D
+from wled_app.domain.color import Color
+
+# 1. Initialize engine and configure 20-node venue universe
+universe, patch_table = create_demo_venue()
+engine = LightingEngine(target_fps=30.0, dry_run=False)
+engine.setup_universe(universe, patch_table)
+
+# 2. Start the background 30 FPS clock loop
+engine.start()
+
+# 3. Trigger continuous 3D spatial pulse radiating from DJ booth (0, 5.5, 0)
+engine.set_spatial_pattern(
+    spatial_radial_pulse(
+        center=Point3D(0.0, 5.5, 0.0),
+        speed=2.0,
+        frequency=1.5,
+        color_center=Color(255, 220, 50),
+        color_edge=Color(10, 20, 80),
+    )
+)
+
+# 4. Immediate blackout and stop
+# engine.blackout()
+# engine.stop()
 ```
 
-### List Saved Devices
+---
+
+## 🌐 REST API Daemon Reference
+
+The engine includes a built-in HTTP REST API daemon (`EngineDaemon`) on port `8765`. For full JSON payload schemas, see the [REST API Reference](docs/API_GUIDE.md).
+
+### Summary of Routes
+
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/status` | Engine lifecycle, actual FPS, tick, master brightness, and fleet status |
+| `POST` | `/api/start` | Start the real-time frame clock loop |
+| `POST` | `/api/stop` | Stop the real-time frame clock loop (flushes blackout) |
+| `POST` | `/api/blackout` | Immediately reset all layers, stop sequences, and flush black frame to all hardware |
+| `GET` | `/api/layers` | List all 10 compositing layers (Layers 0..9) |
+| `POST` | `/api/layers/{0..9}` | Configure pattern, color, speed, blend mode, or channels on a layer |
+| `POST` | `/api/layers/{0..9}/fade` | Trigger non-linear cosine opacity transition |
+| `POST` | `/api/sequence/play` | Play sequence timeline (with optional `time_dilation`) |
+| `POST` | `/api/sequence/pause` | Pause sequence timeline playback |
+| `POST` | `/api/sequence/stop` | Stop sequence playback, reset timeline to 0.0, and flush blackout |
+| `POST` | `/api/sequence/seek` | Seek sequence timeline to specific timestamp (`{"time": 12.5}`) |
+| `POST` | `/api/spatial/pattern` | Set continuous 3D spatial field (`angle_sweep`, `radial_pulse`, `rainbow`, `gradient`, `off`) |
+| `GET` | `/api/fleet` | Retrieve Cat6 telemetry (frames sent, bytes, latency) across all controllers |
+| `POST` | `/api/master_brightness` | Adjust global dimmer without losing relative layer balance |
+| `POST` | `/api/cues` | Snapshot all 10 layers as a named cue |
+| `POST` | `/api/cues/{name}/transition`| Smoothly crossfade all layers to a saved cue |
+| `POST` | `/api/events` | Publish an event to the reactive rule engine |
+
+### Example Curl Commands
+
 ```bash
-wled-app list
-```
+# Check engine status and FPS
+curl http://127.0.0.1:8765/api/status
 
-### Stream Patterns
-```bash
-# Stream rainbow to device
-wled-app play --device "Athom-LivingRoom" --pattern rainbow --fps 30
+# Set Layer 0 to flowing rainbow pattern
+curl -X POST http://127.0.0.1:8765/api/layers/0 \
+  -H "Content-Type: application/json" \
+  -d '{"pattern": "rainbow", "speed": 1.5, "opacity": 1.0, "enabled": true}'
 
-# Stream chase in red with 1.5x speed
-wled-app play --device "Athom-LivingRoom" --pattern chase --color "#FF0000" --speed 1.5
+# Smoothly fade Layer 0 to 0% over 2 seconds
+curl -X POST http://127.0.0.1:8765/api/layers/0/fade \
+  -H "Content-Type: application/json" \
+  -d '{"target_opacity": 0.0, "duration_sec": 2.0}'
 
-# Test alternating channel blink in preview-only / dry-run mode (no network packets sent)
-wled-app play --device "Athom-LivingRoom" --pattern blink --dry-run
+# Trigger continuous 3D radial pulse across universe
+curl -X POST http://127.0.0.1:8765/api/spatial/pattern \
+  -H "Content-Type: application/json" \
+  -d '{"pattern": "radial_pulse", "speed": 1.5, "frequency": 2.0, "color_center": "#FFD700", "color_edge": "#000033"}'
+
+# Immediate Blackout across all controllers
+curl -X POST http://127.0.0.1:8765/api/blackout
 ```
 
 ---
 
 ## 🖥️ Simulated UDP Device (Hardware Digital Twin)
 
-For testing and visual verification without needing physical LED hardware powered on, the repository includes a **standalone WLED ESP32 Hardware Digital Twin Simulator** (`sim.py`).
+For testing and visual verification without needing physical LED hardware powered on, the repository includes a **WLED ESP32 Hardware Digital Twin Simulator** (`sim.py`).
 
-The simulator runs as an independent process that binds to real UDP sockets (`0.0.0.0:4048` for DDP, `0.0.0.0:21324` for DRGB), faithfully processes multi-packet frame assembly and WLED `PUSH` flags through the operating system network stack, and renders physical LED strips on an interactive web canvas.
+### Launching the Simulator
 
-### 🌟 Simulator Features
-
-* **Unified CAD Stage Canvas (`http://localhost:8080`):** Single full-screen hardware-accelerated 2D stage with smooth Pan, Zoom, and Auto-Fit.
-* **Interactive Drag & Drop with Magnetic Snapping:** Drag channel strip fixtures freely across the 2D plane. Fixture endpoints magnetically snap together for effortless alignment.
-* **Architectural Layout Presets:**
-  * **🏛️ Garage Arch Preset:** Instantly aligns fixtures into a connected U-frame: Channel 1 (Left vertical track), Channel 2 (Top horizontal header), and Channel 3 (Right vertical track).
-  * **☰ Stacked Rows Preset:** Aligns channels in clean parallel horizontal runs.
-* **Orientation Controls:** Rotate any strip in 90° increments or flip sequence direction (`FWD ▶` / `◀ REV`).
-* **Multi-Packet Stream Integrity & Telemetry HUD:** Real-time monospace telemetry displaying **FPS**, **Packets/Sec (PPS)**, **Throughput (KB/s)**, **Packet Arrival Jitter (µs)**, and an **Integrity Status Badge** (Healthy 🟢, Sequence Gap 🟡, Torn Frame Push 🔴).
-* **Responsive Multi-Layer Hero Bar:** Gracefully wraps text and controls into clean, organized layers on laptop displays or split-screen windows without clipping or scrollbars.
-* **Zero Modification to Original App:** The simulator is completely decoupled from `run.py` and operates as an independent network receiver.
-
-### 🚀 Launching the Simulator
-
-#### 1. Start the Simulator in Terminal 1
 ```bash
-# Launch using an existing saved device profile (e.g. 3 channels of 270 LEDs):
-python3 sim.py --device "Garage Door 3 by 270"
+# Full 20-Node Venue Universe Simulation (Ports 4048..4067, Web UI http://localhost:8080):
+python3 sim.py --venue
 
-# Or launch with custom ad-hoc channel counts and custom ports:
+# Single Controller Profile Simulation (e.g. 3 channels of 270 LEDs on port 4048):
 python3 sim.py --channels 270 270 270 --port 4048
 ```
-*(Your browser will automatically open `http://localhost:8080` displaying the virtual stage).*
 
-#### 2. Stream Real-Time Patterns from Terminal 2
-In a second terminal window, stream live patterns from your controller app over loopback:
-```bash
-# Stream chase pattern to the simulated controller
-python3 run.py play --ip 127.0.0.1 --pattern chase --speed 1.5
-
-# Or stream other patterns:
-python3 run.py play --ip 127.0.0.1 --pattern rainbow --speed 2.0
-python3 run.py play --ip 127.0.0.1 --pattern fire
-python3 run.py play --ip 127.0.0.1 --pattern meteor
-```
-
-### ⌨️ Studio Keyboard Shortcuts
-
-| Shortcut | Action |
-| :--- | :--- |
-| <kbd>F</kbd> | **Fit to View:** Automatically scale and center all fixtures to the window |
-| <kbd>R</kbd> | **Rotate:** Rotate selected channel fixture 90° clockwise |
-| <kbd>G</kbd> | **Garage Arch:** Snap fixtures into the connected Garage Door frame layout |
-| <kbd>S</kbd> | **Stacked Rows:** Arrange fixtures in parallel horizontal rows |
-| **Scroll Wheel** | Zoom in / out towards mouse cursor |
-| **Drag Background** | Pan the viewport camera across the stage |
+### Web Visualizer Features (`http://localhost:8080`)
+* **Real-time Spatial Rendering:** Visualizes all 28 fixtures across the 13m x 13.5m venue.
+* **Stream Integrity HUD:** Monitors FPS, Packets/Sec, Throughput, and Jitter.
+* **Interactive Controls:** Smooth Pan, Zoom, and Auto-Fit to window.
 
 ---
 
-## 🧱 Architecture & Design Patterns
+## 💻 Interactive Terminal CLI & ASCII Visualizer
 
-The codebase strictly adheres to the engineering patterns documented in `~/llm-coding-practices`:
+The package also includes an interactive terminal UI for single-device inspection:
 
-* **Locality of Behavior (LoB):** Clear, inspectable modules with minimal magic indirection.
-* **Make Illegal States Unrepresentable:** Immutable value objects ([`Color`](src/wled_app/domain/color.py), [`ChannelConfig`](src/wled_app/domain/channel.py), [`DeviceConfig`](src/wled_app/domain/device.py)) guarantee that invalid RGB values, out-of-bounds channels, or malformed protocol states cannot exist.
-* **Composition over Inheritance:** Protocols ([`ProtocolEmitter`](src/wled_app/protocols/base.py), [`Pattern`](src/wled_app/patterns/base.py), [`UdpSender`](src/wled_app/network/udp_client.py)) use structural subtyping via `typing.Protocol`.
-* **Zero-Allocation Packet Buffers:** Contiguous `bytearray` assembly for fast UDP datagram serialization.
-* **Hermetic Testing:** 100% test coverage for protocol encoders and pattern engines using in-memory mock transports.
+```bash
+# Launch interactive terminal wizard:
+python3 -m wled_app
+# Or:
+wled-app
+```
+
+### Terminal CLI Commands
+```bash
+# Create and save a device profile
+wled-app create --name "LivingRoom" --ip 192.168.1.150 --channels 60 30 144 0 --protocol ddp
+
+# List saved devices
+wled-app list
+
+# Stream real-time rainbow with ASCII visualizer
+wled-app play --device "LivingRoom" --pattern rainbow --fps 30
+
+# Test pattern in preview dry-run mode (no network packets sent)
+wled-app play --device "LivingRoom" --pattern chase --color "#FF0000" --dry-run
+```
 
 ---
 
 ## 🔌 Adding Custom Patterns
 
-Creating a new visual effect requires implementing the `Pattern` protocol:
+Implementing a new visual effect requires implementing the `Pattern` protocol:
 
 ```python
 from wled_app.domain.color import Color
@@ -197,14 +345,26 @@ class SparklePattern:
                 frame.set_pixel(ch.start_index + random_pixel, config.primary_color)
 ```
 
-Register it in `src/wled_app/patterns/registry.py` and it immediately becomes available in both the CLI and Interactive TUI!
+Register it in [`src/wled_app/patterns/registry.py`](src/wled_app/patterns/registry.py) to make it immediately accessible across the CLI, REST daemon, and desktop sequencer!
 
 ---
 
-## 🧪 Running Tests
+## 🧪 Testing & Verification
 
-Run the test suite using Python's built-in `unittest`:
+The codebase includes exhaustive test suites covering protocol serialization, compositing math, spatial sampling, and multi-node network dispatch:
 
+### Run Python Tests (121 tests)
 ```bash
-PYTHONPATH=src python3 -m unittest discover -s tests -p "test_*.py" -v
+PYTHONPATH=src python3 -m unittest discover tests
 ```
+
+### Run Java Unit Tests (13 tests)
+```bash
+cd sequencer-java && mvn -o test
+```
+
+### Rebuild Standalone Java Executable JAR
+```bash
+./sequencer-java/build.sh
+```
+Produces `sequencer-java/target/wled-sequencer.jar`.

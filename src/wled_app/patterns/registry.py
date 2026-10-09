@@ -42,3 +42,11 @@ def get_pattern(pattern_id: str) -> Pattern:
         available = list(_REGISTERED_PATTERNS.keys())
         raise ValueError(f"Pattern '{pattern_id}' not found. Available: {available}")
     return pattern_cls()
+
+
+def get_pattern_by_id(pattern_id: str) -> Pattern | None:
+    """Retrieve pattern instance by ID or None if not found."""
+    key = pattern_id.strip().lower()
+    pattern_cls = _REGISTERED_PATTERNS.get(key)
+    return pattern_cls() if pattern_cls else None
+

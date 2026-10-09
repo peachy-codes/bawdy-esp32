@@ -103,3 +103,14 @@ class FrameBuffer:
             buffer[idx + 2] = p.b
             idx += 3
         return buffer
+
+    @classmethod
+    def from_rgb_bytes(cls, raw_bytes: bytes | bytearray) -> FrameBuffer:
+        """Create a FrameBuffer by parsing contiguous RGB bytes (3 bytes per pixel)."""
+        pixel_count = len(raw_bytes) // 3
+        pixels = [
+            Color(raw_bytes[i * 3], raw_bytes[i * 3 + 1], raw_bytes[i * 3 + 2])
+            for i in range(pixel_count)
+        ]
+        return cls(pixels)
+

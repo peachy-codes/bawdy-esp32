@@ -199,6 +199,72 @@ def cmd_play(args: argparse.Namespace, console: Console, repo: DeviceRepository)
         console.print("\n[green]Streaming ended.[/green]")
 
 
+def cmd_daemon(args: argparse.Namespace, console: Console, repo: DeviceRepository) -> None:
+    """Launch the headless WLED Lighting Engine REST Daemon."""
+    from wled_engine.adapters.rest_daemon import EngineDaemon
+    from wled_engine.core import LightingEngine
+
+    engine = LightingEngine(target_fps=args.fps, dry_run=args.dry_run)
+    device = None
+
+    if getattr(args, "venue", False) or getattr(args, "universe", None):
+        from pathlib import Path
+        from wled_engine.spatial.universe import SpatialUniverse
+        from wled_engine.patch.patch_table import PatchTable
+        if getattr(args, "venue", False):
+            from wled_engine.spatial.venue import create_demo_venue
+            universe, patch_table = create_demo_venue()
+        else:
+            universe = SpatialUniverse.load_json(args.universe)
+            patch_file = args.patch or (Path(args.universe).parent / "patch.json")
+            patch_table = PatchTable.load_json(patch_file)
+
+        engine.setup_universe(universe, patch_table, dry_run=args.dry_run)
+        console.print(f"[bold green]🌐 Spatial Universe Active:[/bold green] [cyan]{universe.name}[/cyan] ({universe.total_pixels} pixels across {len(patch_table.get_controllers())} Cat6 controller nodes)")
+    elif args.device:
+        device = repo.get_by_name(args.device) or repo.get(args.device)
+        if not device:
+            console.print(f"[bold red]Device not found:[/bold red] {args.device}")
+            sys.exit(1)
+        engine.add_device(device)
+    elif getattr(args, "ip", None):
+        clean_ip = validate_ip_or_host(args.ip)
+        channels = [int(c) for c in (args.channels or [270, 270, 270])]
+        device = DeviceConfig.create(
+            name="DaemonTarget",
+            ip=clean_ip,
+            channel_lengths=channels,
+            protocol=ProtocolType.DDP,
+            port=getattr(args, "target_port", None) or 4048,
+        )
+        engine.add_device(device)
+    else:
+        all_devs = repo.list_all()
+        if all_devs:
+            device = all_devs[0]
+            engine.add_device(device)
+
+    engine.start()
+    daemon = EngineDaemon(engine=engine, host=args.host, port=args.port)
+    daemon.start()
+
+    console.print(f"[bold green]⚡ Lighting Engine REST Daemon active on http://{args.host}:{daemon.port}[/bold green]")
+    if device:
+        console.print(f"  • Broadcasting UDP to: [cyan]{device.name}[/cyan] ([bold green]{device.ip}:{device.port}[/bold green] [{device.protocol.value.upper()}]) | {device.total_leds} LEDs")
+    elif not getattr(args, "venue", False) and not getattr(args, "universe", None):
+        console.print("  • No UDP target configured. Engine running in headless computation mode.")
+    console.print("  Press [bold yellow]Ctrl+C[/bold yellow] to stop.")
+    try:
+        while True:
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Shutting down daemon...[/yellow]")
+    finally:
+        daemon.stop()
+        engine.stop()
+        console.print("[green]Daemon stopped.[/green]")
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build command-line parser."""
     parser = argparse.ArgumentParser(
@@ -290,6 +356,20 @@ def build_parser() -> argparse.ArgumentParser:
     # Interactive
     subparsers.add_parser("interactive", help="Launch full interactive menu UI")
 
+    # Daemon
+    p_daemon = subparsers.add_parser("daemon", help="Run the headless REST Engine Daemon")
+    p_daemon.add_argument("--venue", action="store_true", help="Configure full 20-node multi-controller venue universe")
+    p_daemon.add_argument("--universe", default=None, help="Path to SpatialUniverse JSON file")
+    p_daemon.add_argument("--patch", default=None, help="Path to PatchTable JSON file")
+    p_daemon.add_argument("--device", help="Device name or ID to attach")
+    p_daemon.add_argument("--ip", default=None, help="Target controller IP address")
+    p_daemon.add_argument("--channels", nargs="+", type=int, default=None, help="LED counts per channel (e.g. 270 270 270)")
+    p_daemon.add_argument("--target-port", type=int, default=None, help="UDP target port on device (default: 4048)")
+    p_daemon.add_argument("--host", default="127.0.0.1", help="HTTP API host (default: 127.0.0.1)")
+    p_daemon.add_argument("--port", type=int, default=8765, help="HTTP API port (default: 8765)")
+    p_daemon.add_argument("--fps", type=float, default=30.0, help="Engine target FPS (default: 30.0)")
+    p_daemon.add_argument("--dry-run", action="store_true", help="Preview only, do not send UDP packets")
+
     return parser
 
 
@@ -313,6 +393,9 @@ def main() -> None:
         cmd_edit(args, console, device_repo)
     elif args.command == "play":
         cmd_play(args, console, device_repo)
+    elif args.command == "daemon":
+        cmd_daemon(args, console, device_repo)
+
 
 
 if __name__ == "__main__":

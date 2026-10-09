@@ -45,8 +45,16 @@ class DdpEmitter:
         self,
         frame: FrameBuffer,
         timeout_sec: int = 2,
+        push: bool = True,
     ) -> list[bytes]:
-        """Encode frame into one or more DDP UDP packets."""
+        """Encode frame into one or more DDP UDP packets.
+
+        Args:
+            frame: FrameBuffer to encode.
+            timeout_sec: Compatibility timeout parameter.
+            push: If True, sets PUSH bit on final chunk to latch frame immediately.
+                  If False, buffers in receiver memory waiting for a DDP Sync packet.
+        """
         total_leds = len(frame)
         if total_leds == 0:
             return []
@@ -67,8 +75,8 @@ class DdpEmitter:
             payload = raw_bytes[start_byte:end_byte]
 
             is_last_chunk = chunk_idx == total_chunks - 1
-            # 0x40 = DDP v1; 0x01 = PUSH flag (render frame on receiving last packet)
-            flags1 = 0x41 if is_last_chunk else 0x40
+            # 0x40 = DDP v1; 0x01 = PUSH flag
+            flags1 = 0x41 if (is_last_chunk and push) else 0x40
             seq = self._next_sequence()
             data_type = 0x01  # RGB
             dest_id = 0x01  # Default display ID
@@ -93,3 +101,13 @@ class DdpEmitter:
             packets.append(header + payload)
 
         return packets
+
+    @staticmethod
+    def encode_sync_packet(seq: int = 1) -> bytes:
+        """Encode a 10-byte zero-payload DDP Broadcast Sync packet with PUSH flag set.
+
+        Transmitting this packet to the broadcast subnet triggers all listening
+        controllers to latch and output their buffered frame simultaneously.
+        """
+        return struct.pack(">BBBB I H", 0x41, max(1, seq % 16), 0x01, 0x01, 0, 0)
+

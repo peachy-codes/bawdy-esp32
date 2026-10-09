@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -e
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PYTHONPATH="$ROOT_DIR/src:${PYTHONPATH:-}"
+
+cleanup() {
+  echo ""
+  echo "🛑 Stopping WLED Stack services..."
+  if [ -n "${DAEMON_PID:-}" ] && kill -0 "$DAEMON_PID" 2>/dev/null; then
+    kill "$DAEMON_PID" 2>/dev/null || true
+  fi
+  if [ -n "${SIM_PID:-}" ] && kill -0 "$SIM_PID" 2>/dev/null; then
+    kill "$SIM_PID" 2>/dev/null || true
+  fi
+  wait 2>/dev/null || true
+  echo "✅ All services stopped."
+}
+
+trap cleanup EXIT INT TERM
+
+MODE="${1:-all}"
+
+case "$MODE" in
+  --sim|sim)
+    echo "🌐 Starting 20-Node Hardware Simulator (Ports 4048..4067, Web UI http://localhost:8080)..."
+    python3 "$ROOT_DIR/sim.py" --venue --universe "$ROOT_DIR/data/venue/universe.json" --patch "$ROOT_DIR/data/venue/patch.json"
+    ;;
+
+  --daemon|daemon)
+    echo "⚡ Starting Lighting Engine REST Daemon (http://127.0.0.1:8765)..."
+    python3 "$ROOT_DIR/run.py" daemon --venue --universe "$ROOT_DIR/data/venue/universe.json" --patch "$ROOT_DIR/data/venue/patch.json" --port 8765
+    ;;
+
+  --gui|gui)
+    exec "$ROOT_DIR/sequencer-gui"
+    ;;
+
+  all|*)
+    echo "=========================================================="
+    echo "🚀 Launching Full WLED Multi-Node Stack (20 Controllers)"
+    echo "=========================================================="
+
+    mkdir -p "$ROOT_DIR/logs"
+    
+    # 1. Start 20-node digital twin simulator in background
+    echo "1. Starting 20-Node Virtual Hardware Simulator..."
+    python3 "$ROOT_DIR/sim.py" --venue --universe "$ROOT_DIR/data/venue/universe.json" --patch "$ROOT_DIR/data/venue/patch.json" --no-browser > "$ROOT_DIR/logs/sim.log" 2>&1 &
+    SIM_PID=$!
+    sleep 1
+
+    if ! kill -0 "$SIM_PID" 2>/dev/null; then
+      echo "❌ Simulator failed to start. Output:"
+      cat "$ROOT_DIR/logs/sim.log"
+      exit 1
+    fi
+    echo "   ✅ Simulator running (Web UI: http://localhost:8080, UDP: 4048..4067)"
+
+    # 2. Start Lighting Engine Daemon in background
+    echo "2. Starting Lighting Engine Daemon (REST API :8765)..."
+    python3 "$ROOT_DIR/run.py" daemon --venue --universe "$ROOT_DIR/data/venue/universe.json" --patch "$ROOT_DIR/data/venue/patch.json" --port 8765 > "$ROOT_DIR/logs/daemon.log" 2>&1 &
+    DAEMON_PID=$!
+    sleep 1
+
+    if ! kill -0 "$DAEMON_PID" 2>/dev/null; then
+      echo "❌ Lighting Engine Daemon failed to start. Output:"
+      cat "$ROOT_DIR/logs/daemon.log"
+      exit 1
+    fi
+    echo "   ✅ Lighting Engine REST Daemon active on http://127.0.0.1:8765"
+
+    # 3. Launch Java Sequencer GUI in foreground
+    echo "3. Launching WLED Sequence Editor [Java Desktop]..."
+    "$ROOT_DIR/sequencer-gui"
+
+    ;;
+esac

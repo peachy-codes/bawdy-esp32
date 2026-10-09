@@ -4,6 +4,13 @@
  */
 
 export const store = {
+  // Mode: 'single' (legacy 1 controller) or 'universe' (20+ controllers, spatial canvas)
+  isUniverseMode: false,
+  universe: null,
+  patch: null,
+  activeGroupFilter: 'all',
+  selectedFixtureId: null,
+
   channels: [],
   pixelData: null,
   totalLeds: 0,
@@ -17,8 +24,18 @@ export const store = {
     zoom: 1.0,
   },
 
-  // Fixtures: { [channelId]: { x: number, y: number, angle: 0|90|180|270, reversed: boolean } }
+  // Single-channel Fixtures: { [channelId]: { x: number, y: number, angle: 0|90|180|270, reversed: boolean } }
   fixtures: {},
+
+  // Blueprint / Venue Architectural Overlay
+  blueprint: {
+    visible: true,
+    opacity: 0.35,
+    image: null,
+  },
+
+  // Multi-Node Fleet Telemetry: { [nodeId]: { fps, pps, kbps, status, port } }
+  multiNodeStats: {},
 
   // Interaction State
   draggingFixtureId: null,

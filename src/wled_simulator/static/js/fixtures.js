@@ -78,6 +78,25 @@ export function applyStackedRowsPreset(containerRect, onComplete) {
 
 export function getFixtureAt(wx, wy) {
   const hitRadius = 24 / store.camera.zoom;
+  const hitRadiusSq = hitRadius * hitRadius;
+
+  if (store.isUniverseMode && store.universe && store.universe.fixtures) {
+    const METER_SCALE = 65.0;
+    for (let i = store.universe.fixtures.length - 1; i >= 0; i--) {
+      const f = store.universe.fixtures[i];
+      if (!f.points) continue;
+      for (let j = 0; j < f.points.length; j++) {
+        const pt = f.points[j];
+        const px = pt[0] * METER_SCALE;
+        const py = -pt[1] * METER_SCALE;
+        const d2 = (wx - px) * (wx - px) + (wy - py) * (wy - py);
+        if (d2 <= hitRadiusSq) {
+          return f.id;
+        }
+      }
+    }
+    return null;
+  }
 
   for (let i = store.channels.length - 1; i >= 0; i--) {
     const ch = store.channels[i];

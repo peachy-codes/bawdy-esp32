@@ -20,7 +20,7 @@ export function connectSimulatorWebSocket({ onConnected, onDisconnected, onConfi
     if (typeof event.data === 'string') {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.channels && onConfig) {
+        if ((msg.universe || msg.channels) && onConfig) {
           onConfig(msg);
         }
         if (onTelemetry) {

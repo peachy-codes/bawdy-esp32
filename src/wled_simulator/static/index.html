@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WLED Digital Twin Studio</title>
+  <title>WLED Digital Twin Studio • 3D Spatial Universe</title>
   <link rel="stylesheet" href="/css/theme.css">
   <link rel="stylesheet" href="/css/header.css">
   <link rel="stylesheet" href="/css/viewport.css">
@@ -12,7 +12,7 @@
 
   <!-- Responsive Studio Hero Bar -->
   <header>
-    <!-- Left Section: Controller Badge & Channel Meta -->
+    <!-- Left Section: Universe / Controller Badge & Meta -->
     <div class="header-left">
       <div class="controller-badge">
         <div id="status-indicator" class="status-dot"></div>
@@ -23,19 +23,30 @@
       </div>
     </div>
 
-    <!-- Center Section: Layout Preset Buttons -->
+    <!-- Center Section: Layout Preset & Universe Tools -->
     <div class="header-center">
-      <div class="btn-group">
-        <button id="btn-preset-garage" class="tool-btn active" title="Snap to Architectural Garage Door Frame (Left, Top, Right)">
+      <!-- Single Controller Presets -->
+      <div id="single-presets-group" class="btn-group">
+        <button id="btn-preset-garage" class="tool-btn active" title="Snap to Architectural Garage Door Frame">
           <span class="tool-btn-icon">🏛️</span> Garage Arch
         </button>
         <button id="btn-preset-stacked" class="tool-btn" title="Arrange in Parallel Horizontal Rows">
           <span class="tool-btn-icon">☰</span> Stacked Rows
         </button>
-        <button id="btn-view-fit" class="tool-btn" title="Center & Fit Strips to Screen (Shortcut: F)">
+      </div>
+
+      <!-- Universe & View Tools -->
+      <div class="btn-group">
+        <button id="btn-view-fit" class="tool-btn" title="Center & Fit All Fixtures (Shortcut: F)">
           <span class="tool-btn-icon">⛶</span> Fit View
         </button>
-        <button id="btn-view-reset" class="tool-btn" title="Reset View Coordinates">
+        <button id="btn-blueprint-toggle" class="tool-btn active" title="Toggle Architectural Venue Floorplan Overlay">
+          <span class="tool-btn-icon">📐</span> Blueprint
+        </button>
+        <button id="btn-nodes-toggle" class="tool-btn" title="Open 20-Node Controller Network Telemetry HUD">
+          <span class="tool-btn-icon">🖧</span> Controllers (20)
+        </button>
+        <button id="btn-view-reset" class="tool-btn" title="Reset Camera Coordinates">
           <span class="tool-btn-icon">↺</span> Reset
         </button>
       </div>
@@ -69,43 +80,108 @@
   <main id="viewport-container">
     <canvas id="studio-canvas"></canvas>
 
+    <!-- Floating Fixture Group Filter Bar (in Universe Mode) -->
+    <div id="group-filter-bar" class="group-filter-container" style="display: none;">
+      <span class="filter-label">GROUPS:</span>
+      <button class="filter-chip active" data-group="all">All</button>
+      <button class="filter-chip" data-group="trusses">Trusses</button>
+      <button class="filter-chip" data-group="festoon">Festoon Bulbs</button>
+      <button class="filter-chip" data-group="panels">2D Panels</button>
+      <button class="filter-chip" data-group="lamps">Floor Lamps</button>
+      <button class="filter-chip" data-group="perimeter">Perimeter</button>
+      <button class="filter-chip" data-group="bar">Bar</button>
+      <button class="filter-chip" data-group="ceiling">Ceiling</button>
+    </div>
+
+    <!-- Blueprint Toolbar (Bottom-Left) -->
+    <div id="blueprint-toolbar" class="blueprint-controls">
+      <span class="bp-title">📐 Blueprint:</span>
+      <input type="range" id="bp-opacity-slider" min="0" max="100" value="35" title="Blueprint Opacity">
+      <span id="bp-opacity-val" style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); width: 26px;">35%</span>
+      <label class="bp-upload-btn" title="Upload Custom Venue Floorplan / CAD Image">
+        📁 Custom Plan
+        <input type="file" id="bp-file-input" accept="image/*" style="display: none;">
+      </label>
+    </div>
+
     <!-- Floating Toggle for Inspector -->
     <button id="toggle-inspector-btn" style="display: none;">
-      ⚙ Channels
+      ⚙ Fixtures
     </button>
 
     <!-- Inspector Panel -->
     <aside id="inspector-panel">
       <div class="inspector-header">
-        <span>Fixture Inspector</span>
+        <span id="inspector-title">Fixture Inspector</span>
         <button id="inspector-close-btn" class="inspector-close-btn" title="Close Panel">✕</button>
       </div>
       <div class="inspector-body">
-        <div style="font-size: 11px; color: var(--text-muted);">
-          Click to select a strip. Drag to move. Press <b>R</b> to rotate, <b>F</b> to flip.
+        <div id="inspector-instructions" style="font-size: 11px; color: var(--text-muted);">
+          Click to select a fixture. Drag to pan. Scroll to zoom.
         </div>
+
         <div id="channel-list-container" class="channel-list">
-          <!-- Dynamically populated -->
+          <!-- Dynamically populated fixtures or channels -->
         </div>
+
+        <!-- Selected Fixture Details -->
         <div id="selected-controls" style="display: none;">
-          <div style="font-size: 11px; font-weight: 600; color: var(--text-sec); margin-top: 4px;">
-            Actions for <span id="sel-ch-label" style="color:var(--accent);">CH1</span>:
+          <div class="selected-details-card">
+            <div style="font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 4px;" id="sel-fix-name">
+              Front Stage Truss Span
+            </div>
+            <div class="details-row">
+              <span class="row-label">Type:</span>
+              <span id="sel-fix-type" class="row-val">Linear Strip</span>
+            </div>
+            <div class="details-row">
+              <span class="row-label">Group:</span>
+              <span id="sel-fix-group" class="row-val">trusses</span>
+            </div>
+            <div class="details-row">
+              <span class="row-label">Pixels:</span>
+              <span id="sel-fix-pixels" class="row-val">600 LEDs</span>
+            </div>
+            <div class="details-row">
+              <span class="row-label">Hardware Patch:</span>
+              <span id="sel-fix-patch" class="row-val font-mono">wled_01: Ch0, Ch1</span>
+            </div>
           </div>
-          <div class="channel-tools">
-            <button id="btn-sel-rotate" class="control-btn" title="Rotate selected channel 90°">
-              ↻ Rotate 90°
-            </button>
-            <button id="btn-sel-flip" class="control-btn" title="Invert LED sequence direction">
-              ⇄ Flip Direction
-            </button>
+          <div class="channel-tools" id="single-channel-tools" style="display: none;">
+            <button id="btn-sel-rotate" class="control-btn" title="Rotate selected channel 90°">↻ Rotate 90°</button>
+            <button id="btn-sel-flip" class="control-btn" title="Invert LED sequence direction">⇄ Flip Direction</button>
           </div>
         </div>
       </div>
     </aside>
 
+    <!-- Multi-Node Controllers Modal / Drawer -->
+    <div id="nodes-drawer-modal" class="modal-backdrop" style="display: none;">
+      <div class="nodes-modal-card">
+        <div class="nodes-modal-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">🖧</span>
+            <span style="font-weight: 700;">Cat6 Multi-Node Controllers Fleet</span>
+            <span id="nodes-modal-count" class="badge">20 Boards</span>
+          </div>
+          <button id="nodes-modal-close" class="inspector-close-btn">✕</button>
+        </div>
+        <div class="nodes-modal-body">
+          <div class="nodes-grid" id="nodes-grid-container">
+            <!-- Dynamically populated 20 nodes -->
+          </div>
+        </div>
+        <div class="nodes-modal-footer">
+          <span style="font-size: 11px; color: var(--text-muted);">
+            High-speed Ethernet DDP broadcast synchronization active (push=False buffer hold with broadcast sync latch packet).
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Bottom Status Bar -->
     <footer id="footer-bar">
-      <span>Drag fixtures to position • Scroll wheel to zoom • Middle-click or drag background to pan</span>
+      <span>Scroll wheel to zoom • Drag background to pan • Click fixture to inspect • <b>F</b> to fit view</span>
     </footer>
   </main>
 

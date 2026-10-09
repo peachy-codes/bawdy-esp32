@@ -1,0 +1,3 @@
+[console_scripts]
+ascii-wled = wled_app.ui.cli:main
+wled-app = wled_app.ui.cli:main

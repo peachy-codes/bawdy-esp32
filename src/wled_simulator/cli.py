@@ -46,6 +46,21 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Do not automatically open web browser on startup",
     )
+    parser.add_argument(
+        "--venue",
+        action="store_true",
+        help="Launch full 20-node multi-controller venue simulation (Metro Concert Hall & Lounge)",
+    )
+    parser.add_argument(
+        "--universe",
+        default=None,
+        help="Path to SpatialUniverse JSON file (enables multi-fixture universe mode)",
+    )
+    parser.add_argument(
+        "--patch",
+        default=None,
+        help="Path to PatchTable JSON file",
+    )
     return parser
 
 
@@ -99,6 +114,55 @@ def main() -> None:
     args = parser.parse_args()
 
     console = Console()
+
+    if args.venue or args.universe:
+        from pathlib import Path
+        if args.venue:
+            from wled_engine.spatial.venue import create_demo_venue
+            universe, patch_table = create_demo_venue()
+        else:
+            from wled_engine.spatial.universe import SpatialUniverse
+            from wled_engine.patch.patch_table import PatchTable
+            universe = SpatialUniverse.load_json(args.universe)
+            if args.patch:
+                patch_table = PatchTable.load_json(args.patch)
+            else:
+                default_patch = Path(args.universe).parent / "patch.json"
+                if default_patch.exists():
+                    patch_table = PatchTable.load_json(default_patch)
+                else:
+                    patch_table = PatchTable("Auto Patch")
+
+        controllers = patch_table.get_controllers()
+        console.print()
+        console.print("[bold cyan]══════════════════════════════════════════════════════════════[/bold cyan]")
+        console.print("[bold white]   WLED Multi-Node Spatial Universe Digital Twin Studio       [/bold white]")
+        console.print("[bold cyan]══════════════════════════════════════════════════════════════[/bold cyan]")
+        console.print(f"  • [bold]Universe:[/bold]        [green]{universe.name}[/green]")
+        console.print(f"  • [bold]Fixtures ({len(universe.fixtures)}):[/bold]  [yellow]{universe.total_pixels} Total Physical Pixels[/yellow]")
+        console.print(f"  • [bold]Controllers ({len(controllers)}):[/bold] [cyan]0.0.0.0:{args.port} .. {args.port + len(controllers) - 1}[/cyan]")
+        console.print(f"  • [bold]Web Visualizer:[/bold] [cyan]http://localhost:{args.web_port}[/cyan]")
+        console.print(f"  • [bold]Groups:[/bold]          [dim]{', '.join(universe.get_groups())}[/dim]")
+        console.print("[dim]Press Ctrl+C to stop.[/dim]\n")
+
+        url = f"http://localhost:{args.web_port}"
+        if not args.no_browser:
+            console.print(f"[dim]Opening web browser at {url}...[/dim]")
+            webbrowser.open(url)
+
+        from wled_simulator.multi_node_runner import MultiNodeSimulatorRunner
+        runner = MultiNodeSimulatorRunner(
+            universe=universe,
+            patch_table=patch_table,
+            base_port=args.port,
+            web_port=args.web_port,
+        )
+
+        try:
+            asyncio.run(runner.run_forever())
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Universe Simulator stopped.[/yellow]")
+        return
 
     channels, udp_port = resolve_channels(args, console)
     total_leds = sum(ch.length for ch in channels)

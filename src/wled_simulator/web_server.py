@@ -15,15 +15,19 @@ class SimulatorWebServer:
 
     def __init__(
         self,
-        channels: list[ChannelInfo],
+        channels: list[ChannelInfo] | None = None,
         udp_port: int = 4048,
         host: str = "127.0.0.1",
         web_port: int = 8080,
+        universe_meta: dict[str, Any] | None = None,
+        patch_meta: dict[str, Any] | None = None,
     ) -> None:
-        self.channels = channels
+        self.channels = channels or []
         self.udp_port = udp_port
         self.host = host
         self.web_port = web_port
+        self.universe_meta = universe_meta
+        self.patch_meta = patch_meta
 
         self._app = web.Application()
         self._sockets: Set[web.WebSocketResponse] = set()
@@ -34,7 +38,7 @@ class SimulatorWebServer:
         self._setup_routes()
 
         self._latest_pixels: bytes | None = None
-        self._latest_telemetry: TelemetryData | None = None
+        self._latest_telemetry: Any = None
         self._telemetry_counter = 0
 
     def _setup_routes(self) -> None:
@@ -57,24 +61,38 @@ class SimulatorWebServer:
         self._sockets.add(ws)
 
         try:
-            # Send initial channel layout metadata
-            init_payload = {
-                "channels": [
-                    {
-                        "channel_id": ch.channel_id,
-                        "length": ch.length,
-                        "start_index": ch.start_index,
-                        "name": ch.name,
-                    }
-                    for ch in self.channels
-                ],
-                "port": self.udp_port,
-                "fps": 0.0,
-                "pps": 0.0,
-                "kbps": 0.0,
-                "jitter_us": 0.0,
-                "integrity_status": "healthy",
-            }
+            # Send initial channel or universe layout metadata
+            if self.universe_meta is not None:
+                init_payload = {
+                    "mode": "universe",
+                    "universe": self.universe_meta,
+                    "patch": self.patch_meta,
+                    "port": self.udp_port,
+                    "fps": 0.0,
+                    "pps": 0.0,
+                    "kbps": 0.0,
+                    "jitter_us": 0.0,
+                    "integrity_status": "healthy",
+                }
+            else:
+                init_payload = {
+                    "mode": "single",
+                    "channels": [
+                        {
+                            "channel_id": ch.channel_id,
+                            "length": ch.length,
+                            "start_index": ch.start_index,
+                            "name": ch.name,
+                        }
+                        for ch in self.channels
+                    ],
+                    "port": self.udp_port,
+                    "fps": 0.0,
+                    "pps": 0.0,
+                    "kbps": 0.0,
+                    "jitter_us": 0.0,
+                    "integrity_status": "healthy",
+                }
             await ws.send_str(json.dumps(init_payload))
 
             # Send current frame if one exists
@@ -89,7 +107,7 @@ class SimulatorWebServer:
 
         return ws
 
-    async def broadcast_frame(self, pixels: bytes, telemetry: TelemetryData) -> None:
+    async def broadcast_frame(self, pixels: bytes, telemetry: Any) -> None:
         """Broadcast updated RGB byte buffer and telemetry to all connected browsers."""
         self._latest_pixels = pixels
         self._latest_telemetry = telemetry
@@ -109,15 +127,23 @@ class SimulatorWebServer:
         # Broadcast telemetry JSON every 2 frames
         self._telemetry_counter += 1
         if self._telemetry_counter % 2 == 0:
-            telemetry_msg = json.dumps({
-                "fps": telemetry.fps,
-                "pps": telemetry.pps,
-                "kbps": telemetry.kbps,
-                "jitter_us": telemetry.jitter_us,
-                "integrity_status": telemetry.integrity_status.value,
-                "integrity_message": telemetry.integrity_message,
-                "port": self.udp_port,
-            })
+            if isinstance(telemetry, dict):
+                telemetry_dict = dict(telemetry)
+                telemetry_dict.setdefault("port", self.udp_port)
+                telemetry_msg = json.dumps(telemetry_dict)
+            elif hasattr(telemetry, "fps"):
+                telemetry_msg = json.dumps({
+                    "fps": telemetry.fps,
+                    "pps": telemetry.pps,
+                    "kbps": telemetry.kbps,
+                    "jitter_us": getattr(telemetry, "jitter_us", 0.0),
+                    "integrity_status": telemetry.integrity_status.value if hasattr(telemetry.integrity_status, "value") else str(telemetry.integrity_status),
+                    "integrity_message": getattr(telemetry, "integrity_message", "Stream healthy"),
+                    "port": self.udp_port,
+                })
+            else:
+                telemetry_msg = json.dumps({"fps": 0.0, "port": self.udp_port})
+
             for ws in self._sockets:
                 try:
                     await ws.send_str(telemetry_msg)
